@@ -1,0 +1,71 @@
+#! C:/Program Files/Nuke9.0v1/nuke-9.0.1.dll -nx
+version 9.0 v1
+Gizmo {
+ knobChanged "\nif nuke.thisKnob().name() == \"weight_channels\":\n    knob = nuke.thisNode().knob(\"weight\")\n    value = nuke.thisKnob().getValue()\n    if value < 3:\n        knob.setFlag(0x00040000)\n    else:\n        knob.clearFlag(0x00040000)\n"
+ tile_color 0xc17939ff
+ addUserKnob {20 VAverage}
+ addUserKnob {3 range l Range t "The radius of the area to blend.\nWill only average voxels with positive density."}
+ addUserKnob {4 weight_channels l "         Channels" t "Channels to be blended together. Custom can be used to set individual weights per channel" M {rgb rgba alpha Custom ""}}
+ addUserKnob {19 weight l Weight +HIDDEN}
+ weight {0.5 0.5 0.5 0.5}
+ addUserKnob {6 weight_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript1.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript1.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript1.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript1.maxTileLines}
+}
+ Input {
+  inputs 0
+  name Input
+  xpos 255
+  ypos 53
+ }
+ Dot {
+  name Dot13
+  note_font_size 20
+  xpos 289
+  ypos 122
+ }
+set N3898800 [stack 0]
+add_layer {voxels voxels.x voxels.y voxels.z voxels.density}
+ Shuffle {
+  in voxels
+  in2 rgba
+  alpha alpha2
+  name Shuffle2
+  label "<font size = \"5\"> \[value in]"
+  xpos 426
+  ypos 82
+  postage_stamp true
+ }
+ Dot {
+  name Dot14
+  note_font_size 20
+  xpos 460
+  ypos 243
+ }
+push $N3898800
+ BlinkScript {
+  inputs 2
+  ProgramGroup 1
+  KernelDescription "1 \"VAverage\" iterate pixelWise 2d8525d7ab50d97e24399e054560862c62cacd8c388d3e33f622e673acd378f6 3 \"colour\" Read Random \"voxels\" Read Random \"dst\" Write Point 5 \"weight\" Float 4 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"range\" Int 1 AAAAAA=="
+  EncodedSource "1 1898 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"
+  rebuild ""
+  VAverage_weight {{"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels == 0 ? 0 : (weight_channels == 1 || weight_channels == 2 ? 1 : weight)"}}
+  VAverage_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
+  VAverage_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
+  VAverage_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
+  VAverage_range {{parent.range}}
+  protectKernelWhenPublishing true
+  name BlinkScript1
+  selected true
+  xpos 255
+  ypos 233
+ }
+ Output {
+  name Output
+  xpos 255
+  ypos 333
+ }
+end_group

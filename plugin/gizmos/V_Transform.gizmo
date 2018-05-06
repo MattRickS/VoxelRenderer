@@ -1,0 +1,144 @@
+#! C:/Program Files/Nuke9.0v1/nuke-9.0.1.dll -nx
+version 9.0 v1
+Gizmo {
+ tile_color 0xc17939ff
+ addUserKnob {20 VoxelTransform}
+ addUserKnob {4 transform_type l Transform t "Apply the transformation to the data within the grid, or to move the grid itself." M {Grid Data ""}}
+ addUserKnob {41 translate T LOCAL_TRANSFORM.translate}
+ addUserKnob {41 rotate T LOCAL_TRANSFORM.rotate}
+ addUserKnob {41 scaling l scale T LOCAL_TRANSFORM.scaling}
+ addUserKnob {41 uniform_scale l "uniform scale" T LOCAL_TRANSFORM.uniform_scale}
+ addUserKnob {41 skew T LOCAL_TRANSFORM.skew}
+ addUserKnob {41 pivot T LOCAL_TRANSFORM.pivot}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript2.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript2.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript2.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript2.maxTileLines}
+}
+ Input {
+  inputs 0
+  name Input
+  xpos 440
+  ypos -61
+ }
+ Dot {
+  name Dot1
+  note_font_size 20
+  xpos 474
+  ypos 5
+ }
+set N32344c00 [stack 0]
+ Dot {
+  name Dot3
+  note_font_size 20
+  xpos 287
+  ypos 5
+ }
+set N32344800 [stack 0]
+ Dot {
+  name Dot4
+  note_font_size 20
+  xpos 287
+  ypos 230
+ }
+push $N32344800
+ Dot {
+  name Dot2
+  note_font_size 20
+  xpos 158
+  ypos 5
+ }
+add_layer {voxels voxels.x voxels.y voxels.z voxels.density}
+ Shuffle {
+  in voxels
+  name Shuffle1
+  label "<font size = \"5\"> \[value in]"
+  xpos 124
+  ypos 65
+  postage_stamp true
+ }
+ BlinkScript {
+  inputs 2
+  KernelDescription "1 \"VoxelTransform\" iterate pixelWise 73755eb8ce3fd6809859f1a8ac29e3b2d93956899b8484b9465a984b991c7f1b 3 \"positions\" Read Point \"voxels\" Read Random \"dst\" Write Point 4 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  EncodedSource "1 2364 v7d+FffYZuYXrpANrf8U9gMUq0czvpPNBwqEzbF+EQ4nfF0MmAhi1FxmM35Q3zcaRlWrKTokEw310zbW4DugWRoIJV3rAXLOJQijPNIGjOy7of87Q7uvOGP1fNE9oMPEvMY2Rlp+XiKtvBwPyjkYoGZlEDtRBo8JDiJRQ9icQBW//2AqMh+AOU2uU2kKjKKOO7tx7xaR3xh4vA5NnF1i/UBtcVNZDWfM1o8nEvn7i7l9PvCVsCh1c/GQGIfSFK9KGTYz8n9nAoRJdnblicHea6gOVkXmY30uKiAB4z0h6E4Rtyer57bJjSFQCjdv7QtmPF/nix7bvBNw5+quLXmkVGV1rTX0vkgODs8bnQ9w1BpjMiWK1GPI/ewsrgW6aYkiQP2qohL9MxjgyzFUwkbktieAtQLv+Iizj2XVQWvR0r2f7mITPB7j21lKo4xXh131vLCZOScflcQCe8he0h461lc7i2no2jSpwYdeFAOfccJEBG15uiOw6hgh4qmxUdKwIAJYHFaJOUpJu5aRHNQV9iCFcxRzi05f4Zf5yQCX3nUmXwNJAqa0aq7LoFpFTAXL+tplwiZRB7rPMePGKS5HzUnV1MMQ3MoeF5cfvOGdbRkzyEEihrB2k40Sf1DYUv9+dtKJHF/KVVcLtf7kPsznN+RfIGsMeU8OpxVpeUQHXE9U2ngx3w+1Rg+frHqRzm0Mx3gYy87ZV9cAJq/FFHVTidoHyFcwWQ/VWCj4qlIzgsjQTX5ACFdrIVIPSK7RctUHajpmmVotT1oCXG1sdk/U+G0JsO0WsB3RZoktjrf33w9m5SqNr5Cix7lnx1OkQ9bV6yrGPIaCGSlEX1w8BhBPZ+tncwyeQtuHguD7Zybw8jBqzSx7YElj9MhB6c64I3BKWAbw6kQlIut5uUlILm6RmUpj77VBEFON0Yi6l/niFct5ucs28FJflvNa4Uuw015ZTob6KU9Ln4dhSPYzYnHAq+Rb1dTo937LdFqD4gNWl1YjYM47//VxyjzoKARIFj4mE94BnasSvPqhA8PLElpqbfG4tg5yROB90cgn5QwSQw/fzTkjr+UaUj2Bz7gaErA0MOrJAAcS8iik20hTjViidlbzDsjq3MTQ0Gd4ZZhH9dT0JNh2Cevu7E2P0igNQ8UCCFYU4T33OUZ0QS1OSICLWnIT5BlTBdajSb1ovMd/vzBtA+5lmtgKmLq6r9PQ1k8rDQAyD5VwXVNxWs8Sho29P+OqjJPldflXuL/Ks3aBBIDiqpwbt+DVvYDmDtnoZTVWvFH11uoFVsXgpNoza4NKLXNUwPAHXYcCMgLLewNzCSae9JwUUxbCqEX57l16mq7KOYXgVQtLIbn4fW/pNXcaya1lH8EKHSR46ZD/vwSStbTGH/DxFDZUftTeD+MSUaA9WTHaTaU1tgYR1hAELCCHWDJWgWXp6MsuvQTycRHCxXyoQxUo6Rtt0lugUfynrjYAr7Z7umvgKlaRzuH6PgKfTSrI+t0tOP4aVbOIRyv4EyzGQ3LmMDZ+iFN5eC/HJoSowgQm2wTIJZgcdy8kFZ5EKSUq/IGDPUF12t8Qv7dcwcsBy+aTQB1xGk+ubMzyNzJ6s4DS5Dzkl2ffbGhuSaqkLKMPfpFfiNuNoEwlqhgkTGWjyvWtVOzqlFTBYfMdgtQNYKDjnaW7P/hDFaN5KKn7ZDtATps/Lajbi7oJrV/XIBtxR9RTj1sjnOitq9g82lLWWPBuJFUM98xqD0kVawNCI4beF9Q4t05FdBCGeU0/ejrFLeVrTCk9ilRif+aCEIya+awpuRXtimMi/su4UZBsK0y8mWU6c7wZ3YmK4Pizpf6fqdULSlZMwUrQTrsmYXXph/ngRGA0pI0rtFgpPlxoneeKHuYX9Sw/XMEdixkkMgJ/eeDpqGnTdF54sKR4g2yjyfjwuJRCcuWG+ty4bfD6GfuO8Mwe2mBd7cqWR7NXvbOzySfXJyWuOiz1KKUdRoOKQ4HjtvHeZVS+FDdh5uoM5ZN9bH5BulgeeL/oUnhqlo03GgOCTqK1k+7quPtr1MWChqYGL+FRvEkAm0eoDospNoK7FG1CMb+hHAzURi3/8uL6K63HLn8AtHROXuNfog1CCPj27f305LssmYwhRlfcSsa5IphY+spOlFztLMlpsemrpluz2Pim55164KRLrYOTXPgQ79rriUImQ44/qGf6V6d6W5tVbxLT2lt6Stz47+vCxLlNLxja0dOebmt5FIIvWburIQPGvgdxXQoBjYCGJ0QKG/fiJCWyXDNXiiN1CRqx3xJp5DZ/x47/J3szZOyzdOSJUWmgpZsDOIJyqPUzMYJyl2jJx3p9kXcEOIaeq3WJy7WhF9WPCDPDjZeOeDHO1ZU/Ul7k1uAP+gUbZi3Ba1pjR4x6sKX/dBCqVsPATMRqg+sPcDmMTs4UUmxSXJUNtV76Wdr1Tcaj13eFrc2VwjhlsyOE7vKFLAGXIdVSPhwV6W6tO6RXml31+J89I6v88jYmAkkbh5L6A8kSw7RHSkEoE4h495AOM3+ZX1BYBPor++bjWLSVY93ywl6DmqLmBOerguQBiu5z7fUO+uRT/ZjTTX+LCFYnRjlni7RnhEXpfHyZCrWsLcP6OjYG06WHRky9jip+tlYDPDpZHzEEXasDDx0e1HZ0fvpJhcIPm19TO4t/YMuuM59/XMwWQ69yPtH7g/d7oZDXzK7BHE1QOp9YtZyWoiuEU+RTeGW+fdrg9Ws+CfNbZ/+fdp+HDUU4u3iwqfNZpsw3DfpjAch7nrClvy9u64k47oygy9vefBz5r8Bid5dfLNydXrxtf7yfBMSdJrUdJdgpqTd4Y9c8GlySrv5Syze3pDgz8f8bl7GxRKhQy4L3horei6yWmZOCW7T7HRx37QR5XRPYR2rtTBa69JlO6CKpNfAXBhj6wfMiTUjlT1tzxaWfeNFCHJSlqxXWZtL6krjmTC1h+13L2fuYm4JUuUgcsQH8hbXvpYkJyZAPJG8d1yaZcl0usWvz9Ia/xTH6KH3CmC/R+kWOueBC+zHJCbdVFlrVnoeMzprOYSGz29KnKI/ttmItAT+o52GufK8H3DxUSwqEveyc/CH9ocaRHkFD+S9Ek6upve//sar/q0KFnGfpiP+97O5miUVF4gieDFL0DeZWbBjtvQ=="
+  rebuild ""
+  VoxelTransform_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
+  VoxelTransform_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
+  VoxelTransform_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
+  VoxelTransform_transform_M {
+      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
+      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
+      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
+      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
+    }
+  protectKernelWhenPublishing true
+  name BlinkScript2
+  xpos 124
+  ypos 220
+ }
+ Dot {
+  name Dot5
+  note_font_size 20
+  xpos 158
+  ypos 315
+ }
+push $N32344c00
+ NoOp {
+  name METADATA_READ
+  xpos 440
+  ypos 82
+  addUserKnob {20 User}
+  addUserKnob {1 matrix}
+  matrix "\[metadata vTransformMatrix frame]"
+ }
+ ModifyMetaData {
+  metadata {
+   {set vTransformMatrix "\[value LOCAL_TRANSFORM.world_matrix]"}
+  }
+  name ModifyMetaData2
+  xpos 440
+  ypos 226
+ }
+ Switch {
+  inputs 2
+  which {{transform_type}}
+  name Switch1
+  xpos 440
+  ypos 311
+ }
+ Output {
+  name Output2
+  xpos 440
+  ypos 393
+ }
+ Axis2 {
+  inputs 0
+  display off
+  selectable false
+  useMatrix true
+  matrix {
+      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 3]"}}
+      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 3]"}}
+      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 3]"}}
+      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 3]"}}
+    }
+  name WORLD_TRANSFORM
+  xpos 591
+  ypos 63
+  addUserKnob {20 "Ppos Locator"}
+  addUserKnob {18 pointPosition l "Point Position"}
+  pointPosition {0 0 0}
+  addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ }
+ Axis2 {
+  name LOCAL_TRANSFORM
+  selected true
+  xpos 591
+  ypos 205
+  addUserKnob {20 "Ppos Locator"}
+  addUserKnob {18 pointPosition l "Point Position"}
+  pointPosition {0 0 0}
+  addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ }
+end_group

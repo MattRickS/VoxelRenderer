@@ -1,0 +1,120 @@
+#! C:/Program Files/Nuke9.0v1/nuke-9.0.1.dll -nx
+version 9.0 v1
+Gizmo {
+ inputs 0
+ tile_color 0xc44b11ff
+ addUserKnob {20 VGrid}
+ addUserKnob {31 voxel_bbox l "Bounding Box"}
+ voxel_bbox {-0.5 -0.5 -0.5 0.5 0.5 0.5}
+ addUserKnob {18 gridres l Resolution R 1 256}
+ gridres 64
+ addUserKnob {6 gridres_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {6 uniform -STARTLINE}
+ uniform true
+ addUserKnob {41 color l Color T Constant1.color}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript1.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript1.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript1.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript1.maxTileLines}
+}
+ Axis2 {
+  inputs 0
+  display off
+  selectable false
+  name vTransformMatrix
+  xpos -22
+  ypos 124
+  addUserKnob {20 "Ppos Locator"}
+  addUserKnob {18 pointPosition l "Point Position"}
+  pointPosition {0 0 0}
+  addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ }
+ Constant {
+  inputs 0
+  name Constant1
+  xpos 159
+  ypos -138
+ }
+ Reformat {
+  type "to box"
+  box_width {{ceil(sqrt(CONTROL.total))}}
+  box_height {{ceil(sqrt(CONTROL.total))}}
+  box_fixed true
+  resize fill
+  center false
+  name Reformat1
+  xpos 159
+  ypos -29
+ }
+set N32396400 [stack 0]
+ Dot {
+  name Dot2
+  note_font_size 20
+  xpos 85
+  ypos -25
+ }
+ BlinkScript {
+  ProgramGroup 1
+  KernelDescription "1 \"VGrid\" iterate pixelWise 3b140e8cbfda428ac95853bd9e9761e44d4c51aad2633cdb8042495cb9b9755b 2 \"format\" Read Point \"dst\" Write Point 4 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"total\" Int 1 AAAAAA=="
+  EncodedSource "1 754 LuM0b1tYHKw4u2GX42C1A37F0jmNLoqwBwUnaVvdBuW1oD0JBBYUZKCFZ0r+fLFTuzEYGraNh1znI82yA8BP74tQLs97hhwZHy2FsGqNiLZj2dgQnOBniPMQ7z2pYIvY7EMjbzB2D9C747vRpM9DTfdQPyoLZFPF6fXfzS28ino4eOTVeYkVlEkQfkZtjbpPw6vMH6DFskW0VbwBpFjuXmM0LZQy+WU4YnyjbWLVG6TQN0oQnGX9PQRnX0Ekb2qLLhlrvZSYTjxZivrycjdvG8qHyfbyNEG+yI26hSTiA+O1PixzmgGQS/zm0JHZ4ShSD4NPvG2kNaFdzkau8zNZi+vlk7H5EOALQ6Y9VDmXZMDKVGFO6k/wbzFnCqzFpIL/DsCPADYfuLFOW4FuDK85bOYqkZxR6+XFBEThFSHy3Pcq+087PFvzleSoAWjvJPqbnMfOPvVwcS3mTDXVG414by0VjENTAMGWBI+N6gs2ycixOcm5VErRv1cKUGkQSi8VCc7DShyJdlXtkjuaMm+Iyr3JBfkhpupVAEnK5wgZv+kZoCuyJdX5sy+pdZe8C2U8iGtGxZRdo1RzmX3mD7Kjcyy8xqEXkbvGFecXFowMNhA2APHOyR95pLRwBXir/j+SKoQWOe9ui7uJ6vWMnQoGzidtaBH6wOYyjrmhzboFHtH48zJLZlmyaMclpn99vwLlvyidM7I/SVJC8Gh41Mm4JivvrVGXn8bZdO6VryxV9tZutU80szMbe+jvVbrcxYHIWjJLcBiOcUJQb3qU9Sv/w6panR/jzMv0i+/nN0YK9MDPjf3s3f59gT21a+SiJjm93upzrtulbTMNRkZwdTMEmTm10dyIdyld0BoLyUdfEgaK9TBj1QaP36pdmVNsUinXHLV/CGsSKzegCTcO5aCEeI+sHw7fAs5F0YIs1Z8MQ58twQiOHlgWENStY3w+2jVO2LUYF6LKuJt/l/tLzVdhsLoFAgYzK5rWudb7cb6xxks17N8QEZP3PoMvNecqjRr2"
+  rebuild ""
+  VGrid_bbox_min {{parent.voxel_bbox.x} {parent.voxel_bbox.y} {parent.voxel_bbox.n}}
+  VGrid_bbox_max {{parent.voxel_bbox.r} {parent.voxel_bbox.t} {parent.voxel_bbox.f}}
+  VGrid_resolution {{CONTROL.resolution.x} {CONTROL.resolution.y} {CONTROL.resolution.z}}
+  VGrid_total {{CONTROL.total}}
+  protectKernelWhenPublishing true
+  name BlinkScript1
+  xpos 51
+  ypos 31
+ }
+ Dot {
+  name Dot1
+  note_font_size 20
+  xpos 85
+  ypos 103
+ }
+push $N32396400
+add_layer {voxels voxels.x voxels.y voxels.z voxels.density}
+ ShuffleCopy {
+  inputs 2
+  alpha alpha2
+  black red
+  white green
+  red2 blue
+  green2 alpha
+  out2 voxels
+  name ShuffleCopy1
+  xpos 159
+  ypos 99
+ }
+ ModifyMetaData {
+  metadata {
+   {set bbox "\[value voxel_bbox]"}
+   {set resolution "\[value CONTROL.resolution]"}
+   {set vTransformMatrix "\[value vTransformMatrix.world_matrix]"}
+  }
+  name ModifyMetaData1
+  xpos 159
+  ypos 143
+ }
+ Output {
+  name Output
+  xpos 159
+  ypos 195
+ }
+ NoOp {
+  inputs 0
+  name CONTROL
+  selected true
+  xpos 284
+  ypos 39
+  addUserKnob {20 User}
+  addUserKnob {3 total}
+  total {{"resolution.x * resolution.y * resolution.z"}}
+  addUserKnob {7 res_scale}
+  res_scale {{"gridres.r / (voxel_bbox.r - voxel_bbox.x)"}}
+  addUserKnob {13 resolution}
+  resolution {{"uniform ? rint(res_scale * (voxel_bbox.r - voxel_bbox.x)) : gridres"} {"uniform ? rint(res_scale * (voxel_bbox.t - voxel_bbox.y)) : gridres"} {"uniform ? rint(res_scale * (voxel_bbox.f - voxel_bbox.n)) : gridres"}}
+ }
+end_group

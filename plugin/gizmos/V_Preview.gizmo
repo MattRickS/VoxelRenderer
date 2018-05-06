@@ -1,0 +1,137 @@
+#! C:/Program Files/Nuke9.0v1/nuke-9.0.1.dll -nx
+version 9.0 v1
+Gizmo {
+ tile_color 0xbeb139ff
+ addUserKnob {20 vpreview l "Voxel Preview"}
+ addUserKnob {4 view_colour l View M {Density Colour Position}}
+ addUserKnob {41 value l grade T Multiply1.value}
+ addUserKnob {41 detail l "point detail" T PositionToPoints1.detail}
+ addUserKnob {41 pointSize l "point size" T PositionToPoints1.pointSize}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript2.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript2.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript2.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript2.maxTileLines}
+}
+ Input {
+  inputs 0
+  name Input
+  xpos 246
+  ypos -283
+ }
+ Dot {
+  name Dot1
+  note_font_size 20
+  xpos 280
+  ypos -250
+ }
+set N322f4800 [stack 0]
+ Dot {
+  name Dot3
+  note_font_size 20
+  xpos 400
+  ypos -250
+ }
+add_layer {voxels voxels.x voxels.y voxels.z voxels.density}
+ Shuffle {
+  in voxels
+  name Shuffle2
+  label "<font size = \"5\"> \[value in]"
+  xpos 366
+  ypos -206
+  postage_stamp true
+ }
+ Dot {
+  name Dot5
+  note_font_size 20
+  xpos 400
+  ypos -71
+ }
+set N3231bc00 [stack 0]
+ BlinkScript {
+  KernelDescription "1 \"VoxelTransform\" iterate pixelWise 354232abd4b87787704b45ded14d128e6ab984911e1d96996bcb02f1716fd247 2 \"voxels\" Read Point \"dst\" Write Point 1 \"M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  EncodedSource "1 560 v7d+FffYZuYXrpANrf8U9gMUq0czvpPNBwqEzbF+EQ4nfF0MmAhi1FxmM35Q3zcaRlWrKTokEw310zbW4DugWYz4y3w8FJe/IzcFOWvZAYPoWa6xpXoOCvMAKVHs5fR7LqluJLeZ3tg3qYxMb+Fj03UPfaYFf5N/PSMIGkIF0CED4ipLmd1ELd+KbKKsJwagwcoiEHXEbOV+tiBIvi834XbRc1cbZB5OUyz1iTLdG4U3fofpM2mY0np9MNUdcVPQW/u0tENG8rSwOKbac9yRQKF48ule3kTNRg0mRkn3pOS8eXZSlKBWltmM6ANt01FxcuPiuwkkfmEqNOte4SGNvm6+LOx+KUqtXUq33THnOKDvjgOJFerj5Cc8JIVxG2Z7La83qvhK51HIolN9KiiXuRAVWDKTMk8+WbamS7Wfwm9h9OIM+TfybJWMN1Fv/vDW9jbN9E3cg9VZQgX/pz55zPWjXEFoki7oiPHHUGU2BAWffJiOzBjaVAF8Yds5Ombn5vH/wQuYtdgT97ivHL+mJpKZ+nXqxZHexXcCZQoaWuZz17o/zCuZaRDLnQPnGyhz49yByP15/xSFwIDzD4/giRa5P0XSnR8uzDtJmcFR0qtuQ9UZidfvmSCifVZyC/u2rNprrfINMbmenQK8CFeO/XXNAGfPMvSymS5lVUfO7rCJo4mnBrk2V+zsTvdxYS+B8sM6K7fj8mUXVUmjP4Y4eCfyyxZNc9aDUWz2fggvrNJKi6/bmqY8u13rshy4Y6Ym"
+  rebuild ""
+  group_VoxelTransform_M 1
+  VoxelTransform_M {
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
+    }
+  protectKernelWhenPublishing true
+  name BlinkScript2
+  xpos 366
+  ypos -17
+ }
+ Dot {
+  name Dot6
+  note_font_size 20
+  xpos 400
+  ypos 64
+ }
+push $N3231bc00
+push $N322f4800
+push $N322f4800
+ Dot {
+  name Dot2
+  note_font_size 20
+  xpos 162
+  ypos -250
+ }
+ Shuffle {
+  in alpha
+  name Shuffle1
+  label "<font size = \"5\"> \[value in]"
+  xpos 128
+  ypos -206
+  postage_stamp true
+ }
+ Dot {
+  name Dot4
+  note_font_size 20
+  xpos 162
+  ypos -71
+ }
+ Switch {
+  inputs 3
+  which {{view_colour}}
+  name Switch1
+  xpos 246
+  ypos -75
+ }
+ Multiply {
+  channels rgb
+  name Multiply1
+  xpos 246
+  ypos -13
+ }
+ ShuffleCopy {
+  inputs 2
+  alpha alpha2
+  black red
+  white green
+  red2 blue
+  green2 alpha
+  out2 voxels
+  name ShuffleCopy1
+  xpos 246
+  ypos 60
+ }
+ PositionToPoints2 {
+  display textured
+  selectable false
+  render_mode textured
+  P_channel voxels
+  detail 1
+  name PositionToPoints1
+  xpos 246
+  ypos 116
+ }
+ Output {
+  name Output
+  selected true
+  xpos 246
+  ypos 216
+ }
+end_group

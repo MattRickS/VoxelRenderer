@@ -1,0 +1,83 @@
+#! C:/Program Files/Nuke9.0v1/nuke-9.0.1.dll -nx
+version 9.0 v1
+Gizmo {
+ inputs 2
+ tile_color 0xbdb039ff
+ addUserKnob {20 VRender}
+ addUserKnob {41 format l Format T FORMAT.format}
+ addUserKnob {7 density l Density t "The amount of light absorbed by each voxel. Lower to get a thinner result."}
+ density 1
+ addUserKnob {3 samples l Samples t "Number of samples per pixel. Higher values will increase accuracy at the cost of speed."}
+ samples 128
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript1.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript1.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript1.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript1.maxTileLines}
+}
+ Input {
+  inputs 0
+  name Inputcam
+  label 1
+  xpos 655
+  ypos -128
+  number 1
+ }
+ Input {
+  inputs 0
+  name Input
+  label 0
+  xpos 535
+  ypos -127
+ }
+ Clamp {
+  maximum 1.#INF
+  name Clamp1
+  xpos 535
+  ypos -33
+ }
+ BlinkScript {
+  ProgramGroup 1
+  KernelDescription "1 \"VRender\" iterate pixelWise a604b5c97cabd396fed0640f0dca39e8f373a0616f5fa0bd8c103d2f33ab5115 2 \"voxels\" Read Random \"dst\" Write Point 11 \"Resolution\" Int 3 CgAAAAoAAAAKAAAAAAAAAA== \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"density\" Float 1 AACAPw== \"samples\" Int 1 MgAAAA== \"Width\" Float 1 AAC0RA== \"Height\" Float 1 AIBKRA== \"Focal\" Float 1 AADwQQ== \"Haperture\" Float 1 ppvEQQ== \"cam_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  EncodedSource "1 5194 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"
+  rebuild ""
+  VRender_Resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
+  VRender_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
+  VRender_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
+  VRender_density {{parent.density}}
+  VRender_samples {{parent.samples}}
+  VRender_Width {{FORMAT.width}}
+  VRender_Height {{FORMAT.height}}
+  VRender_Focal {{group.input1.focal}}
+  VRender_Haperture {{group.input1.haperture}}
+  VRender_cam_M {
+      {{group.input1.world_matrix} {group.input1.world_matrix} {group.input1.world_matrix} {group.input1.world_matrix}}
+      {{group.input1.world_matrix} {group.input1.world_matrix} {group.input1.world_matrix} {group.input1.world_matrix}}
+      {{group.input1.world_matrix} {group.input1.world_matrix} {group.input1.world_matrix} {group.input1.world_matrix}}
+      {{group.input1.world_matrix} {group.input1.world_matrix} {group.input1.world_matrix} {group.input1.world_matrix}}
+    }
+  VRender_transform_M {
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
+    }
+  protectKernelWhenPublishing true
+  format {{{parent.Reformat1.format}}}
+  specifiedFormat true
+  name BlinkScript1
+  xpos 535
+  ypos 86
+ }
+ Output {
+  name Output
+  xpos 535
+  ypos 222
+ }
+ Reformat {
+  inputs 0
+  name FORMAT
+  xpos 384
+  ypos 90
+ }
+end_group

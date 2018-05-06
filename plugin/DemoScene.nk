@@ -1,0 +1,327 @@
+#! C:/Program Files/Nuke9.0v1/nuke-9.0.1.dll -nx
+version 9.0 v1
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="0" w="1920" h="1040" screen="0">
+        <splitter orientation="1">
+            <split size="1204"/>
+            <splitter orientation="1">
+                <split size="45"/>
+                <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                    <page id="Toolbar.1"/>
+                </dock>
+                <split size="1155"/>
+                <splitter orientation="2">
+                    <split size="572"/>
+                    <dock id="" activePageId="Viewer.1">
+                        <page id="Viewer.1"/>
+                    </dock>
+                    <split size="403"/>
+                    <dock id="" activePageId="DAG.1" focus="true">
+                        <page id="DAG.1"/>
+                        <page id="Curve Editor.1"/>
+                        <page id="DopeSheet.1"/>
+                    </dock>
+                </splitter>
+            </splitter>
+            <split size="696"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name "D:/Programming/Nuke/Voxel Generator/VoxelSystem_V01_01/DemoScene.nk"
+ frame 182
+ last_frame 360
+ format "1920 1080 0 0 1920 1080 1 HD_1080"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+}
+Axis2 {
+ inputs 0
+ rotate {0 {frame} 0}
+ pivot {0.75 0.5 0.5}
+ name Axis1
+ xpos -170
+ ypos -263
+ addUserKnob {20 "Ppos Locator"}
+ addUserKnob {18 pointPosition l "Point Position"}
+ pointPosition {0 0 0}
+ addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+}
+Camera2 {
+ translate {0.75 0.5 5}
+ frame_rate 25
+ name Camera1
+ label "\[basename \[value fbx_node_name ]]"
+ xpos -170
+ ypos -147
+}
+Constant {
+ inputs 0
+ color {0.104 0.322 0.62 0}
+ color_panelDropped true
+ name Constant1
+ xpos -294
+ ypos -477
+}
+Ramp {
+ p0 {100 -176}
+ p1 {100 1051}
+ type smooth1
+ color {0.01376097649 0.09777082503 0.3369482756 0}
+ color_panelDropped true
+ name Ramp1
+ xpos -294
+ ypos -405
+}
+set N385b000 [stack 0]
+Axis2 {
+ inputs 0
+ translate {0 8 0}
+ name LIGHT
+ xpos -151
+ ypos -501
+ addUserKnob {20 "Ppos Locator"}
+ addUserKnob {18 pointPosition l "Point Position"}
+ pointPosition {0 0 0}
+ addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+}
+V_Grid.gizmo {
+ inputs 0
+ name V_Grid1
+ xpos -41
+ ypos -1029
+ voxel_bbox {0 0 0 1.7 1 1}
+ gridres 256
+ color {0 0 0 0.5}
+}
+Dot {
+ name Dot1
+ label "GENERATE GRID"
+ note_font_size 20
+ xpos -7
+ ypos -992
+}
+Dot {
+ name Dot2
+ note_font_size 20
+ xpos -7
+ ypos -949
+}
+set N38d6800 [stack 0]
+V_Noise.gizmo {
+ name V_Noise1
+ xpos -41
+ ypos -921
+ offset -0.295
+ seed 512
+ persistence 0.645
+ scaling {1.7 0.8 1}
+ pivot {0.75 0.5 0.5}
+}
+V_Shape.gizmo {
+ name V_Shape1
+ xpos -41
+ ypos -895
+ center {0.65 0.5 0.5}
+ world_space true
+ shapesize 0.3
+ scale {1.2 0.55 1}
+ pdensity 0
+ ndensity 3
+ mix 0.712
+}
+Expression {
+ channel0 alpha
+ expr0 "a < 0 ? a * 0.7 : a"
+ channel1 none
+ channel2 none
+ name Expression1
+ xpos -41
+ ypos -869
+}
+push $N38d6800
+Dot {
+ name Dot3
+ note_font_size 20
+ xpos 94
+ ypos -949
+}
+V_Noise.gizmo {
+ name V_Noise2
+ xpos 60
+ ypos -922
+ seed 121
+ persistence 0.7
+ translate {0 -0.4 0}
+ scaling {1.5 1 1}
+}
+V_Shape.gizmo {
+ name V_Shape2
+ xpos 60
+ ypos -896
+ center {1 0.5 0.5}
+ world_space true
+ shapesize 0.3
+ scale {1.2 0.55 0.5}
+ pdensity 0
+ ndensity 3
+ mix 0.712
+}
+Expression {
+ channel0 alpha
+ expr0 "a < 0 ? a * 0.33 : a"
+ channel1 none
+ channel2 none
+ name Expression2
+ xpos 60
+ ypos -870
+}
+Dot {
+ name Dot4
+ xpos 94
+ ypos -826
+}
+ChannelMerge {
+ inputs 2
+ operation plus
+ mix 0.155
+ name ChannelMerge1
+ xpos -41
+ ypos -843
+}
+Expression {
+ channel0 alpha
+ expr0 "a == 0 ? -0.4 : a"
+ channel1 none
+ channel2 none
+ name Expression3
+ xpos -41
+ ypos -791
+}
+V_Erode.gizmo {
+ name V_Erode1
+ xpos -41
+ ypos -765
+ size 3
+ mix 0.825
+}
+Multiply {
+ channels alpha
+ value 20
+ name Multiply1
+ xpos -41
+ ypos -739
+}
+V_Noise.gizmo {
+ name V_Noise3
+ xpos -41
+ ypos -701
+ offset -0.1
+ density 15
+ seed 512
+ size 0.25
+ persistence 0.645
+ pivot {0.75 0.5 0.5}
+}
+Multiply {
+ channels alpha
+ value 5
+ name Multiply2
+ xpos -41
+ ypos -675
+}
+Dot {
+ name Dot5
+ label "LAYER DENSITIES"
+ note_font_size 20
+ xpos -7
+ ypos -624
+}
+Add {
+ channels rgb
+ value 0.048
+ name Add1
+ xpos -41
+ ypos -536
+}
+V_PtLight.gizmo {
+ inputs 2
+ name V_PtLight1
+ xpos -41
+ ypos -481
+ intensity 1.25
+ absorption 0.705
+}
+V_EnvLight.gizmo {
+ inputs 2
+ name V_EnvLight1
+ xpos -41
+ ypos -405
+ intensity 0.51
+ absorption 0.585
+}
+Dot {
+ name Dot7
+ label LIGHTING
+ note_font_size 20
+ xpos -7
+ ypos -359
+}
+FrameHold {
+ first_frame 125
+ name FrameHold1
+ xpos -41
+ ypos -262
+}
+Dot {
+ name Dot8
+ label "IF LIGHT AND CLOUD AREN'T MOVING,\nCAN BE HELD FOR QUICK RENDERING"
+ note_font_size 20
+ xpos -7
+ ypos -213
+}
+V_Render.gizmo {
+ inputs 2
+ name V_Render1
+ xpos -41
+ ypos -127
+ format 0
+}
+Dot {
+ name Dot9
+ label RENDER
+ note_font_size 20
+ xpos -7
+ ypos -58
+}
+push $N385b000
+Dot {
+ name Dot6
+ note_font_size 20
+ xpos -260
+ ypos 13
+}
+Merge2 {
+ inputs 2
+ name Merge1
+ xpos -41
+ ypos 9
+}
+Dither {
+ amount 0.0095
+ name Dither1
+ xpos -41
+ ypos 35
+}
+Viewer {
+ frame_range 1-360
+ name Viewer1
+ xpos -41
+ ypos 242
+}
