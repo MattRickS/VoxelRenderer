@@ -34,7 +34,7 @@ define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
 }
 Root {
  inputs 0
- name "D:/Programming/Nuke/Voxel Generator/git/nodes.nk"
+ name "D:/Programming/Nuke/Voxel Generator/git/nodes2.nk"
  project_directory "\[file dirname \[value root.name]]"
  format "1920 1080 0 0 1920 1080 1 HD_1080"
  proxy_type scale
@@ -56,10 +56,10 @@ Group {
  uniform true
  addUserKnob {41 color l Color T Constant1.color}
  addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript1.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript1.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript1.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript1.maxTileLines}
+ addUserKnob {41 "Local GPU: " T BlinkScript_grid.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_grid.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_grid.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_grid.maxTileLines}
 }
  Axis2 {
   inputs 0
@@ -90,7 +90,7 @@ Group {
   xpos 159
   ypos -29
  }
-set N37b4b000 [stack 0]
+set N356cf800 [stack 0]
  Dot {
   name Dot2
   note_font_size 20
@@ -107,7 +107,6 @@ set N37b4b000 [stack 0]
   VGrid_resolution {{CONTROL.resolution.x} {CONTROL.resolution.y} {CONTROL.resolution.z}}
   VGrid_total {{CONTROL.total}}
   name BlinkScript_grid
-  selected true
   xpos 51
   ypos 33
  }
@@ -117,7 +116,7 @@ set N37b4b000 [stack 0]
   xpos 85
   ypos 103
  }
-push $N37b4b000
+push $N356cf800
 add_layer {voxels voxels.x voxels.y voxels.z voxels.density}
  ShuffleCopy {
   inputs 2
@@ -161,12 +160,251 @@ add_layer {voxels voxels.x voxels.y voxels.z voxels.density}
  }
 end_group
 Viewer {
- frame 1
  frame_range 1-100
  name Viewer1
  xpos 301
  ypos 277
 }
+Group {
+ inputs 0
+ name V_Shape
+ knobChanged "\nif nuke.thisKnob().name() == \"shape\":\n    if nuke.thisKnob().getValue() < 3:\n        for knob in (\"xplane\", \"yplane\", \"zplane\"):\n            nuke.thisNode().knob(knob).setFlag(0x00040000)\n    else:\n        for knob in (\"xplane\", \"yplane\", \"zplane\"):\n            nuke.thisNode().knob(knob).clearFlag(0x00040000)\n"
+ tile_color 0xc17939ff
+ xpos -480
+ ypos -130
+ addUserKnob {20 VoxelTransform}
+ addUserKnob {4 shape l Shape M {Sphere Cube Diamond Plane}}
+ addUserKnob {6 xplane l x -STARTLINE +HIDDEN}
+ addUserKnob {6 yplane l y -STARTLINE +HIDDEN}
+ addUserKnob {6 zplane l z -STARTLINE +HIDDEN}
+ addUserKnob {13 center l Center}
+ addUserKnob {6 world_space l "World Space" -STARTLINE}
+ addUserKnob {7 shapesize l Size R 0 10}
+ shapesize 0.5
+ addUserKnob {18 scale l Scale}
+ scale {1 1 1}
+ addUserKnob {6 scale_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {7 pdensity l "Positive Density" t "Multiplier for the positive density values" R 0 100}
+ pdensity 1
+ addUserKnob {7 ndensity l "Negative Density" t "Multiplier for the negative density values" R 0 100}
+ ndensity 1
+ addUserKnob {7 padd l "Positive Add" t "Increase the positive value" R 0 100}
+ addUserKnob {7 nadd l "Negative Add" t "Increase the negative value" R 0 100}
+ addUserKnob {26 ""}
+ addUserKnob {41 operation T ChannelMerge1.operation}
+ addUserKnob {41 mix T ChannelMerge1.mix}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript_transform.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_transform.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_transform.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_transform.maxTileLines}
+}
+ Input {
+  inputs 0
+  name Input
+  xpos 562
+  ypos -108
+ }
+ Dot {
+  name Dot9
+  note_font_size 20
+  xpos 596
+  ypos -53
+ }
+set N333cf800 [stack 0]
+ Shuffle {
+  in2 voxels
+  red red2
+  green green2
+  blue blue2
+  name Shuffle1
+  label "<font size = \"5\"> \[value in]"
+  xpos 562
+  ypos -6
+  postage_stamp true
+ }
+set N333cf400 [stack 0]
+ Dot {
+  name Dot11
+  note_font_size 20
+  xpos 706
+  ypos 34
+ }
+ BlinkScript {
+  kernelSourceFile bin/transform/transform.cpp
+  KernelDescription "1 \"VTransform\" iterate pixelWise 5b690b92e4ac81d8c4109362853108ee2d03e941660f97309bcdff56941ad2cd 2 \"voxels\" Read Point \"dst\" Write Point 1 \"M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  kernelSource "kernel VTransform : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float4x4 M;\n  \n  float4 multVectMatrix(float4 vec, float4x4 M)\n  \{\n    float4 out = float4(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3],\n      vec.w\n    );\n\n    return out;\n  \}\n\n  void process()\n  \{\n    float4 position = voxels();\n    dst() = multVectMatrix(position, M);\n  \} \n\};"
+  rebuild ""
+  group_VTransform_M 1
+  VTransform_M {
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
+    }
+  name BlinkScript_transform
+  selected true
+  xpos 672
+  ypos 84
+ }
+ Dot {
+  name Dot12
+  note_font_size 20
+  xpos 706
+  ypos 149
+ }
+push $N333cf400
+ Switch {
+  inputs 2
+  which {{parent.world_space}}
+  name Switch2
+  xpos 562
+  ypos 145
+ }
+ Dot {
+  name Dot1
+  note_font_size 20
+  xpos 596
+  ypos 246
+ }
+set N333fa000 [stack 0]
+ Dot {
+  name Dot4
+  note_font_size 20
+  xpos 701
+  ypos 246
+ }
+set N33471c00 [stack 0]
+ Dot {
+  name Dot6
+  note_font_size 20
+  xpos 811
+  ypos 246
+ }
+ Expression {
+  temp_name0 r_dist
+  temp_expr0 "(r - center.x) * scale.r"
+  temp_name1 g_dist
+  temp_expr1 "(g - center.y) * scale.g"
+  temp_name2 b_dist
+  temp_expr2 "(b - center.z) * scale.b"
+  temp_name3 dist
+  temp_expr3 "r_dist * xplane + g_dist * yplane + b_dist * zplane"
+  channel0 alpha
+  expr0 "dist > 0 ? dist * pdensity + padd : dist * ndensity - nadd"
+  channel1 none
+  channel2 none
+  name PLANE
+  xpos 777
+  ypos 306
+ }
+ Dot {
+  name Dot7
+  note_font_size 20
+  xpos 811
+  ypos 441
+ }
+push $N33471c00
+ Expression {
+  temp_name0 r_dist
+  temp_expr0 "((shapesize*scale.r) / 3 - abs(r - center.x))/(shapesize*scale.r)"
+  temp_name1 g_dist
+  temp_expr1 "((shapesize*scale.g) / 3 - abs(g - center.y))/(shapesize*scale.g)"
+  temp_name2 b_dist
+  temp_expr2 "((shapesize*scale.b) / 3 - abs(b - center.z))/(shapesize*scale.b)"
+  temp_name3 dist
+  temp_expr3 "r_dist + g_dist + b_dist"
+  channel0 alpha
+  expr0 "dist > 0 ? dist * pdensity + padd : dist * ndensity - nadd"
+  channel1 none
+  channel2 none
+  name DIAMOND
+  xpos 667
+  ypos 306
+ }
+ Dot {
+  name Dot5
+  note_font_size 20
+  xpos 701
+  ypos 377
+ }
+push $N333fa000
+ Expression {
+  temp_name0 dx
+  temp_expr0 "shapesize * scale.r - abs(r - center.x)"
+  temp_name1 dy
+  temp_expr1 "shapesize * scale.g - abs(g - center.y)"
+  temp_name2 dz
+  temp_expr2 "shapesize * scale.b - abs(b - center.z)"
+  temp_name3 dist
+  temp_expr3 "(min(min(dx, dy), dz))"
+  channel0 alpha
+  expr0 "dist > 0 ? dist * pdensity + padd : dist * ndensity - nadd"
+  channel1 none
+  channel2 none
+  channel3 none
+  name CUBE
+  xpos 562
+  ypos 306
+ }
+push $N333fa000
+ Dot {
+  name Dot2
+  note_font_size 20
+  xpos 489
+  ypos 246
+ }
+ Expression {
+  temp_name0 dist
+  temp_expr0 "(shapesize - sqrt(((r - center.x)**2)/scale.r + ((g - center.y)**2)/scale.g + ((b - center.z)**2)/scale.b))"
+  channel0 alpha
+  expr0 "dist > 0 ? dist * pdensity + padd : dist * ndensity - nadd"
+  channel1 none
+  channel2 none
+  channel3 none
+  name SPHERE
+  xpos 455
+  ypos 306
+ }
+ Dot {
+  name Dot3
+  note_font_size 20
+  xpos 489
+  ypos 377
+ }
+ Switch {
+  inputs 4
+  which {{shape}}
+  name Switch1
+  xpos 562
+  ypos 437
+ }
+push $N333cf800
+ Dot {
+  name Dot8
+  note_font_size 20
+  xpos 379
+  ypos -53
+ }
+ Dot {
+  name Dot10
+  note_font_size 20
+  xpos 379
+  ypos 524
+ }
+ ChannelMerge {
+  inputs 2
+  operation plus
+  name ChannelMerge1
+  xpos 562
+  ypos 507
+ }
+ Output {
+  name Output
+  xpos 562
+  ypos 596
+ }
+end_group
 Group {
  inputs 0
  name V_Noise
@@ -199,10 +437,10 @@ Group {
  addUserKnob {41 skew T NOISE_TRANSFORM.skew}
  addUserKnob {41 pivot T NOISE_TRANSFORM.pivot}
  addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript1.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript1.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript1.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript1.maxTileLines}
+ addUserKnob {41 "Local GPU: " T BlinkScript_noise.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_noise.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_noise.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_noise.maxTileLines}
 }
  Axis2 {
   inputs 0
@@ -226,7 +464,7 @@ Group {
   xpos 553
   ypos -231
  }
-set N347c4400 [stack 0]
+set N356a3c00 [stack 0]
  Shuffle {
   in2 voxels
   red red2
@@ -256,6 +494,7 @@ set N347c4400 [stack 0]
       {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
     }
   name BlinkScript_noise
+  selected true
   xpos 519
   ypos -80
  }
@@ -279,7 +518,7 @@ set N347c4400 [stack 0]
   xpos 553
   ypos 82
  }
-push $N347c4400
+push $N356a3c00
  Dot {
   name Dot2
   note_font_size 20
@@ -309,10 +548,10 @@ Group {
  addUserKnob {7 size l Size R -5 5}
  addUserKnob {41 mix T Copy1.mix}
  addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript1.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript1.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript1.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript1.maxTileLines}
+ addUserKnob {41 "Local GPU: " T BlinkScript_erode.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_erode.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_erode.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_erode.maxTileLines}
 }
  Input {
   inputs 0
@@ -326,7 +565,7 @@ Group {
   xpos 111
   ypos -183
  }
-set N33645000 [stack 0]
+set N34589c00 [stack 0]
  Shuffle {
   in2 voxels
   red red2
@@ -357,7 +596,7 @@ set N33645000 [stack 0]
   xpos 111
   ypos 28
  }
-push $N33645000
+push $N34589c00
  Dot {
   name Dot3
   note_font_size 20
@@ -409,7 +648,7 @@ Group {
   xpos 289
   ypos 122
  }
-set N33675000 [stack 0]
+set N3339f000 [stack 0]
  Shuffle {
   in voxels
   in2 rgba
@@ -426,7 +665,7 @@ set N33675000 [stack 0]
   xpos 460
   ypos 243
  }
-push $N33675000
+push $N3339f000
  BlinkScript {
   inputs 2
   kernelSourceFile bin/transform/average.cpp
@@ -439,6 +678,7 @@ push $N33675000
   VAverage_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
   VAverage_range {{parent.range}}
   name BlinkScript_average
+  selected true
   xpos 255
   ypos 233
  }
@@ -446,390 +686,6 @@ push $N33675000
   name Output
   xpos 255
   ypos 333
- }
-end_group
-Group {
- inputs 0
- name V_Shape
- knobChanged "\nif nuke.thisKnob().name() == \"shape\":\n    if nuke.thisKnob().getValue() < 3:\n        for knob in (\"xplane\", \"yplane\", \"zplane\"):\n            nuke.thisNode().knob(knob).setFlag(0x00040000)\n    else:\n        for knob in (\"xplane\", \"yplane\", \"zplane\"):\n            nuke.thisNode().knob(knob).clearFlag(0x00040000)\n"
- tile_color 0xc17939ff
- xpos -480
- ypos -130
- addUserKnob {20 VoxelTransform}
- addUserKnob {4 shape l Shape M {Sphere Cube Diamond Plane}}
- addUserKnob {6 xplane l x -STARTLINE +HIDDEN}
- addUserKnob {6 yplane l y -STARTLINE +HIDDEN}
- addUserKnob {6 zplane l z -STARTLINE +HIDDEN}
- addUserKnob {13 center l Center}
- addUserKnob {6 world_space l "World Space" -STARTLINE}
- addUserKnob {7 shapesize l Size R 0 10}
- shapesize 0.5
- addUserKnob {18 scale l Scale}
- scale {1 1 1}
- addUserKnob {6 scale_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
- addUserKnob {7 pdensity l "Positive Density" t "Multiplier for the positive density values" R 0 100}
- pdensity 1
- addUserKnob {7 ndensity l "Negative Density" t "Multiplier for the negative density values" R 0 100}
- ndensity 1
- addUserKnob {7 padd l "Positive Add" t "Increase the positive value" R 0 100}
- addUserKnob {7 nadd l "Negative Add" t "Increase the negative value" R 0 100}
- addUserKnob {26 ""}
- addUserKnob {41 operation T ChannelMerge1.operation}
- addUserKnob {41 mix T ChannelMerge1.mix}
- addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript2.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript2.useGPUIfAvailable}
-}
- Input {
-  inputs 0
-  name Input
-  xpos 562
-  ypos -108
- }
- Dot {
-  name Dot9
-  note_font_size 20
-  xpos 596
-  ypos -53
- }
-set N38f7800 [stack 0]
- Shuffle {
-  in2 voxels
-  red red2
-  green green2
-  blue blue2
-  name Shuffle1
-  label "<font size = \"5\"> \[value in]"
-  xpos 562
-  ypos -6
-  postage_stamp true
- }
-set N38f7400 [stack 0]
- Dot {
-  name Dot11
-  note_font_size 20
-  xpos 706
-  ypos 34
- }
- BlinkScript {
-  kernelSourceFile bin/transform/transform.cpp
-  KernelDescription "1 \"VTransform\" iterate pixelWise 5b690b92e4ac81d8c4109362853108ee2d03e941660f97309bcdff56941ad2cd 2 \"voxels\" Read Point \"dst\" Write Point 1 \"M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-  kernelSource "kernel VTransform : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float4x4 M;\n  \n  float4 multVectMatrix(float4 vec, float4x4 M)\n  \{\n    float4 out = float4(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3],\n      vec.w\n    );\n\n    return out;\n  \}\n\n  void process()\n  \{\n    float4 position = voxels();\n    dst() = multVectMatrix(position, M);\n  \} \n\};"
-  rebuild ""
-  group_VTransform_M 1
-  VTransform_M {
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
-    }
-  name BlinkScript_transform
-  selected true
-  xpos 672
-  ypos 84
- }
- Dot {
-  name Dot12
-  note_font_size 20
-  xpos 706
-  ypos 149
- }
-push $N38f7400
- Switch {
-  inputs 2
-  which {{parent.world_space}}
-  name Switch2
-  xpos 562
-  ypos 145
- }
- Dot {
-  name Dot1
-  note_font_size 20
-  xpos 596
-  ypos 246
- }
-set N38f6000 [stack 0]
- Dot {
-  name Dot4
-  note_font_size 20
-  xpos 701
-  ypos 246
- }
-set N38f7c00 [stack 0]
- Dot {
-  name Dot6
-  note_font_size 20
-  xpos 811
-  ypos 246
- }
- Expression {
-  temp_name0 r_dist
-  temp_expr0 "(r - center.x) * scale.r"
-  temp_name1 g_dist
-  temp_expr1 "(g - center.y) * scale.g"
-  temp_name2 b_dist
-  temp_expr2 "(b - center.z) * scale.b"
-  temp_name3 dist
-  temp_expr3 "r_dist * xplane + g_dist * yplane + b_dist * zplane"
-  channel0 alpha
-  expr0 "dist > 0 ? dist * pdensity + padd : dist * ndensity - nadd"
-  channel1 none
-  channel2 none
-  name PLANE
-  xpos 777
-  ypos 306
- }
- Dot {
-  name Dot7
-  note_font_size 20
-  xpos 811
-  ypos 441
- }
-push $N38f7c00
- Expression {
-  temp_name0 r_dist
-  temp_expr0 "((shapesize*scale.r) / 3 - abs(r - center.x))/(shapesize*scale.r)"
-  temp_name1 g_dist
-  temp_expr1 "((shapesize*scale.g) / 3 - abs(g - center.y))/(shapesize*scale.g)"
-  temp_name2 b_dist
-  temp_expr2 "((shapesize*scale.b) / 3 - abs(b - center.z))/(shapesize*scale.b)"
-  temp_name3 dist
-  temp_expr3 "r_dist + g_dist + b_dist"
-  channel0 alpha
-  expr0 "dist > 0 ? dist * pdensity + padd : dist * ndensity - nadd"
-  channel1 none
-  channel2 none
-  name DIAMOND
-  xpos 667
-  ypos 306
- }
- Dot {
-  name Dot5
-  note_font_size 20
-  xpos 701
-  ypos 377
- }
-push $N38f6000
- Expression {
-  temp_name0 dx
-  temp_expr0 "shapesize * scale.r - abs(r - center.x)"
-  temp_name1 dy
-  temp_expr1 "shapesize * scale.g - abs(g - center.y)"
-  temp_name2 dz
-  temp_expr2 "shapesize * scale.b - abs(b - center.z)"
-  temp_name3 dist
-  temp_expr3 "(min(min(dx, dy), dz))"
-  channel0 alpha
-  expr0 "dist > 0 ? dist * pdensity + padd : dist * ndensity - nadd"
-  channel1 none
-  channel2 none
-  channel3 none
-  name CUBE
-  xpos 562
-  ypos 306
- }
-push $N38f6000
- Dot {
-  name Dot2
-  note_font_size 20
-  xpos 489
-  ypos 246
- }
- Expression {
-  temp_name0 dist
-  temp_expr0 "(shapesize - sqrt(((r - center.x)**2)/scale.r + ((g - center.y)**2)/scale.g + ((b - center.z)**2)/scale.b))"
-  channel0 alpha
-  expr0 "dist > 0 ? dist * pdensity + padd : dist * ndensity - nadd"
-  channel1 none
-  channel2 none
-  channel3 none
-  name SPHERE
-  xpos 455
-  ypos 306
- }
- Dot {
-  name Dot3
-  note_font_size 20
-  xpos 489
-  ypos 377
- }
- Switch {
-  inputs 4
-  which {{shape}}
-  name Switch1
-  xpos 562
-  ypos 437
- }
-push $N38f7800
- Dot {
-  name Dot8
-  note_font_size 20
-  xpos 379
-  ypos -53
- }
- Dot {
-  name Dot10
-  note_font_size 20
-  xpos 379
-  ypos 524
- }
- ChannelMerge {
-  inputs 2
-  operation plus
-  name ChannelMerge1
-  xpos 562
-  ypos 507
- }
- Output {
-  name Output
-  xpos 562
-  ypos 596
- }
-end_group
-Group {
- inputs 0
- name V_Transform
- tile_color 0xc17939ff
- xpos -40
- ypos -130
- addUserKnob {20 VoxelTransform}
- addUserKnob {4 transform_type l Transform t "Apply the transformation to the data within the grid, or to move the grid itself." M {Grid Data ""}}
- addUserKnob {41 translate T LOCAL_TRANSFORM.translate}
- addUserKnob {41 rotate T LOCAL_TRANSFORM.rotate}
- addUserKnob {41 scaling l scale T LOCAL_TRANSFORM.scaling}
- addUserKnob {41 uniform_scale l "uniform scale" T LOCAL_TRANSFORM.uniform_scale}
- addUserKnob {41 skew T LOCAL_TRANSFORM.skew}
- addUserKnob {41 pivot T LOCAL_TRANSFORM.pivot}
- addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript2.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript2.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript2.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript2.maxTileLines}
-}
- Input {
-  inputs 0
-  name Input
-  xpos 440
-  ypos -61
- }
- Dot {
-  name Dot1
-  note_font_size 20
-  xpos 474
-  ypos 5
- }
-set N336a9800 [stack 0]
- Dot {
-  name Dot3
-  note_font_size 20
-  xpos 287
-  ypos 5
- }
-set N336a9400 [stack 0]
- Dot {
-  name Dot4
-  note_font_size 20
-  xpos 287
-  ypos 230
- }
-push $N336a9400
- Dot {
-  name Dot2
-  note_font_size 20
-  xpos 158
-  ypos 5
- }
- Shuffle {
-  in voxels
-  name Shuffle1
-  label "<font size = \"5\"> \[value in]"
-  xpos 124
-  ypos 65
-  postage_stamp true
- }
- BlinkScript {
-  inputs 2
-  kernelSourceFile bin/transform/transform_data.cpp
-  KernelDescription "1 \"VTransformData\" iterate pixelWise 0f68264e42208fc2d0fa5a6cc657585f70bfe7ecdb5fe27909ede629bf43dda1 3 \"positions\" Read Point \"voxels\" Read Random \"dst\" Write Point 4 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-  kernelSource "kernel VTransformData : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead> positions;\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    float4x4 transform_M;\n\n  local:\n    float3 VoxelSizeInv;\n    int grid_width;\n    float4x4 transform_M_Inv;\n\n  void init()\n  \{\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n    grid_width = voxels.bounds.width();\n    transform_M_Inv = transform_M.invert();\n    // To transform in world space, invert the world_matrix, and multiply ... after?\n    // transform_M_Inv * world_M_Inv;\n  \}\n  \n  float3 multVectMatrix(float4 vec, float4x4 M)\n  \{\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n  float4 voxelValue(int3 voxel)\n  \{\n    // Return Empty for values outside of grid\n    if (voxel.x < 0 || resolution.x <= voxel.x ||\n        voxel.y < 0 || resolution.y <= voxel.y ||\n        voxel.z < 0 || resolution.z <= voxel.z )\n      return 0;\n\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y);\n  \}\n\n  float4 Blend(float3 curpos)\n  \{\n    float3 weight, voxel_space;\n    int3 base_voxel, offset;\n    // Lower Bound of 8 adjacent voxels\n    for (int c = 0; c < 3; c++)\n    \{\n      voxel_space\[c] = curpos\[c] * VoxelSizeInv\[c];\n      base_voxel\[c] = int(floor(voxel_space\[c] - 0.5f));\n    \}\n\n    float4 result = 0;\n    for (int i = 0; i < 8; i++)\n    \{\n      // Weighted distance on each axis for each adjacent voxel\n      offset = int3(i / 4, (i / 2) % 2, i % 2);\n      weight.x = 1 - fabs(offset.x - (voxel_space.x - (base_voxel.x + 0.5f)));\n      weight.y = 1 - fabs(offset.y - (voxel_space.y - (base_voxel.y + 0.5f)));\n      weight.z = 1 - fabs(offset.z - (voxel_space.z - (base_voxel.z + 0.5f)));\n\n      result += voxelValue(base_voxel + offset) * weight.x * weight.y * weight.z;\n    \}\n\n    return result;\n  \}\n\n  void process()\n  \{\n    float4 position = positions();\n    float3 target = multVectMatrix(position, transform_M_Inv);\n    dst() = Blend(target - bbox_min);\n  \} \n\};"
-  rebuild ""
-  VTransformData_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
-  VTransformData_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
-  VTransformData_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
-  group_VTransformData_transform_M 1
-  VTransformData_transform_M {
-      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
-      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
-      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
-      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
-    }
-  name BlinkScript_transform_data
-  selected true
-  xpos 124
-  ypos 220
- }
- Dot {
-  name Dot5
-  note_font_size 20
-  xpos 158
-  ypos 315
- }
-push $N336a9800
- NoOp {
-  name METADATA_READ
-  xpos 440
-  ypos 82
-  addUserKnob {20 User}
-  addUserKnob {1 matrix}
-  matrix "\[metadata vTransformMatrix frame]"
- }
- ModifyMetaData {
-  metadata {
-   {set vTransformMatrix "\[value LOCAL_TRANSFORM.world_matrix]"}
-  }
-  name ModifyMetaData2
-  xpos 440
-  ypos 226
- }
- Switch {
-  inputs 2
-  which {{transform_type}}
-  name Switch1
-  xpos 440
-  ypos 311
- }
- Output {
-  name Output2
-  xpos 440
-  ypos 393
- }
- Axis2 {
-  inputs 0
-  display off
-  selectable false
-  useMatrix true
-  matrix {
-      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 3]"}}
-      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 3]"}}
-      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 3]"}}
-      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 3]"}}
-    }
-  name WORLD_TRANSFORM
-  xpos 591
-  ypos 63
-  addUserKnob {20 "Ppos Locator"}
-  addUserKnob {18 pointPosition l "Point Position"}
-  pointPosition {0 0 0}
-  addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
- }
- Axis2 {
-  name LOCAL_TRANSFORM
-  xpos 591
-  ypos 205
-  addUserKnob {20 "Ppos Locator"}
-  addUserKnob {18 pointPosition l "Point Position"}
-  pointPosition {0 0 0}
-  addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
  }
 end_group
 Group {
@@ -851,10 +707,10 @@ Group {
  addUserKnob {41 operation T Merge.operation}
  addUserKnob {41 mix T Merge.mix}
  addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript1.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript1.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript1.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript1.maxTileLines}
+ addUserKnob {41 "Local GPU: " T BlinkScript_point.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_point.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_point.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_point.maxTileLines}
 }
  Input {
   inputs 0
@@ -877,7 +733,7 @@ Group {
   xpos 637
   ypos 74
  }
-set N37aadc00 [stack 0]
+set N344e8800 [stack 0]
  Clamp {
   channels alpha
   maximum 1.#INF
@@ -916,10 +772,11 @@ set N37aadc00 [stack 0]
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
   name BlinkScript_point
+  selected true
   xpos 603
   ypos 278
  }
-set N10893c00 [stack 0]
+set N3790b000 [stack 0]
  Dot {
   name Dot9
   note_font_size 20
@@ -938,8 +795,8 @@ set N10893c00 [stack 0]
   xpos 527
   ypos 406
  }
-set N37aac400 [stack 0]
-push $N37aadc00
+set N3454d400 [stack 0]
+push $N344e8800
  Dot {
   name Dot3
   note_font_size 20
@@ -959,7 +816,7 @@ push $N37aadc00
   xpos 307
   ypos 288
  }
-set N37ae3800 [stack 0]
+set N3ad5c00 [stack 0]
  Add {
   value {1 0.915 0.775 1}
   value_panelDropped true
@@ -981,14 +838,14 @@ set N37ae3800 [stack 0]
   xpos 307
   ypos 537
  }
-push $N37aac400
+push $N3454d400
  Invert {
   channels alpha
   name Invert1
   xpos 493
   ypos 458
  }
-push $N37ae3800
+push $N3ad5c00
  Dot {
   name Dot6
   note_font_size 20
@@ -1023,7 +880,7 @@ push $N37ae3800
   xpos 417
   ypos 601
  }
-push $N10893c00
+push $N3790b000
  Merge2 {
   inputs 2
   operation multiply
@@ -1037,7 +894,7 @@ push $N10893c00
   xpos 637
   ypos 738
  }
-push $N37aadc00
+push $N344e8800
  Dot {
   name Dot4
   note_font_size 20
@@ -1079,10 +936,10 @@ Group {
  addUserKnob {41 operation T Merge.operation}
  addUserKnob {41 mix T Merge.mix}
  addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript1.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript1.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript1.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript1.maxTileLines}
+ addUserKnob {41 "Local GPU: " T BlinkScript_environment.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_environment.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_environment.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_environment.maxTileLines}
 }
  Input {
   inputs 0
@@ -1105,7 +962,7 @@ Group {
   xpos 1238
   ypos -288
  }
-set N37b74400 [stack 0]
+set N3566b000 [stack 0]
  Clamp {
   channels alpha
   maximum 1.#INF
@@ -1145,6 +1002,7 @@ set N37b74400 [stack 0]
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
   name BlinkScript_environment
+  selected true
   xpos 1204
   ypos -84
  }
@@ -1182,7 +1040,7 @@ set N37b74400 [stack 0]
    xpos 396
    ypos -557
   }
-set N3be50c00 [stack 0]
+set N35677800 [stack 0]
   Shuffle {
    in voxels
    in2 rgba
@@ -1199,7 +1057,7 @@ set N3be50c00 [stack 0]
    xpos 567
    ypos -436
   }
-push $N3be50c00
+push $N35677800
   BlinkScript {
    inputs 2
    kernelSourceFile C:/Users/mshaw/Documents/Tests/Blink/Cloud_Gen_03/Scripts/WORKING/VoxelAverage_transform_002.cpp
@@ -1229,7 +1087,7 @@ push $N3be50c00
   xpos 1238
   ypos 51
  }
-push $N37b74400
+push $N3566b000
  Dot {
   name Dot2
   note_font_size 20
@@ -1269,10 +1127,10 @@ Group {
  addUserKnob {41 operation T Merge.operation}
  addUserKnob {41 mix T Merge.mix}
  addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript1.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript1.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript1.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript1.maxTileLines}
+ addUserKnob {41 "Local GPU: " T BlinkScript_directional.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_directional.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_directional.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_directional.maxTileLines}
 }
  Input {
   inputs 0
@@ -1295,7 +1153,7 @@ Group {
   xpos 482
   ypos 254
  }
-set N33707400 [stack 0]
+set N35670c00 [stack 0]
  Clamp {
   channels alpha
   maximum 1.#INF
@@ -1334,6 +1192,7 @@ set N33707400 [stack 0]
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
   name BlinkScript_directional
+  selected true
   xpos 448
   ypos 422
  }
@@ -1342,7 +1201,7 @@ set N33707400 [stack 0]
   xpos 482
   ypos 468
  }
-set N33706400 [stack 0]
+set N3567bc00 [stack 0]
  Dot {
   name Dot9
   note_font_size 20
@@ -1361,8 +1220,8 @@ set N33706400 [stack 0]
   xpos 372
   ypos 586
  }
-set N3475f800 [stack 0]
-push $N33707400
+set N3567b000 [stack 0]
+push $N35670c00
  Dot {
   name Dot3
   note_font_size 20
@@ -1382,7 +1241,7 @@ push $N33707400
   xpos 152
   ypos 468
  }
-set N3475ec00 [stack 0]
+set N35717c00 [stack 0]
  Add {
   value {1 0.915 0.775 1}
   value_panelDropped true
@@ -1404,14 +1263,14 @@ set N3475ec00 [stack 0]
   xpos 152
   ypos 717
  }
-push $N3475f800
+push $N3567b000
  Invert {
   channels alpha
   name Invert1
   xpos 338
   ypos 638
  }
-push $N3475ec00
+push $N35717c00
  Dot {
   name Dot6
   note_font_size 20
@@ -1446,7 +1305,7 @@ push $N3475ec00
   xpos 262
   ypos 781
  }
-push $N33706400
+push $N3567bc00
  Merge2 {
   inputs 2
   operation multiply
@@ -1460,7 +1319,7 @@ push $N33706400
   xpos 482
   ypos 918
  }
-push $N33707400
+push $N35670c00
  Dot {
   name Dot4
   note_font_size 20
@@ -1493,10 +1352,10 @@ Group {
  addUserKnob {41 detail l "point detail" T PositionToPoints1.detail}
  addUserKnob {41 pointSize l "point size" T PositionToPoints1.pointSize}
  addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript2.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript2.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript2.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript2.maxTileLines}
+ addUserKnob {41 "Local GPU: " T BlinkScript_transform.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_transform.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_transform.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_transform.maxTileLines}
 }
  Input {
   inputs 0
@@ -1510,7 +1369,7 @@ Group {
   xpos 280
   ypos -250
  }
-set N3894800 [stack 0]
+set N3ac3000 [stack 0]
  Dot {
   name Dot3
   note_font_size 20
@@ -1531,7 +1390,7 @@ set N3894800 [stack 0]
   xpos 400
   ypos -71
  }
-set N3895000 [stack 0]
+set N378db000 [stack 0]
  BlinkScript {
   kernelSourceFile bin/transform/transform.cpp
   KernelDescription "1 \"VTransform\" iterate pixelWise 5b690b92e4ac81d8c4109362853108ee2d03e941660f97309bcdff56941ad2cd 2 \"voxels\" Read Point \"dst\" Write Point 1 \"M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
@@ -1545,6 +1404,7 @@ set N3895000 [stack 0]
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
   name BlinkScript_transform
+  selected true
   xpos 366
   ypos -13
  }
@@ -1554,9 +1414,9 @@ set N3895000 [stack 0]
   xpos 400
   ypos 64
  }
-push $N3895000
-push $N3894800
-push $N3894800
+push $N378db000
+push $N3ac3000
+push $N3ac3000
  Dot {
   name Dot2
   note_font_size 20
@@ -1620,7 +1480,7 @@ push $N3894800
 end_group
 Group {
  inputs 0
- name V_Render11
+ name V_Render
  tile_color 0xbdb039ff
  xpos -203
  ypos 24
@@ -1631,10 +1491,10 @@ Group {
  addUserKnob {3 samples l Samples t "Number of samples per pixel. Higher values will increase accuracy at the cost of speed."}
  samples 128
  addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript1.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript1.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript1.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript1.maxTileLines}
+ addUserKnob {41 "Local GPU: " T BlinkScript_render.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_render.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_render.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_render.maxTileLines}
 }
  Input {
   inputs 0
@@ -1699,5 +1559,151 @@ Group {
   name Output
   xpos 535
   ypos 222
+ }
+end_group
+Group {
+ inputs 0
+ name V_Transform
+ tile_color 0xc17939ff
+ xpos -40
+ ypos -130
+ addUserKnob {20 VoxelTransform}
+ addUserKnob {4 transform_type l Transform t "Apply the transformation to the data within the grid, or to move the grid itself." M {Grid Data ""}}
+ addUserKnob {41 translate T LOCAL_TRANSFORM.translate}
+ addUserKnob {41 rotate T LOCAL_TRANSFORM.rotate}
+ addUserKnob {41 scaling l scale T LOCAL_TRANSFORM.scaling}
+ addUserKnob {41 uniform_scale l "uniform scale" T LOCAL_TRANSFORM.uniform_scale}
+ addUserKnob {41 skew T LOCAL_TRANSFORM.skew}
+ addUserKnob {41 pivot T LOCAL_TRANSFORM.pivot}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript_transform_data.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_transform_data.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_transform_data.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_transform_data.maxTileLines}
+}
+ Input {
+  inputs 0
+  name Input
+  xpos 440
+  ypos -61
+ }
+ Dot {
+  name Dot1
+  note_font_size 20
+  xpos 474
+  ypos 5
+ }
+set N356a2800 [stack 0]
+ Dot {
+  name Dot3
+  note_font_size 20
+  xpos 287
+  ypos 5
+ }
+set N6c696c00 [stack 0]
+ Dot {
+  name Dot4
+  note_font_size 20
+  xpos 287
+  ypos 230
+ }
+push $N6c696c00
+ Dot {
+  name Dot2
+  note_font_size 20
+  xpos 158
+  ypos 5
+ }
+ Shuffle {
+  in voxels
+  name Shuffle1
+  label "<font size = \"5\"> \[value in]"
+  xpos 124
+  ypos 65
+  postage_stamp true
+ }
+ BlinkScript {
+  inputs 2
+  kernelSourceFile bin/transform/transform_data.cpp
+  KernelDescription "1 \"VTransformData\" iterate pixelWise 0f68264e42208fc2d0fa5a6cc657585f70bfe7ecdb5fe27909ede629bf43dda1 3 \"positions\" Read Point \"voxels\" Read Random \"dst\" Write Point 4 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  kernelSource "kernel VTransformData : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead> positions;\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    float4x4 transform_M;\n\n  local:\n    float3 VoxelSizeInv;\n    int grid_width;\n    float4x4 transform_M_Inv;\n\n  void init()\n  \{\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n    grid_width = voxels.bounds.width();\n    transform_M_Inv = transform_M.invert();\n    // To transform in world space, invert the world_matrix, and multiply ... after?\n    // transform_M_Inv * world_M_Inv;\n  \}\n  \n  float3 multVectMatrix(float4 vec, float4x4 M)\n  \{\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n  float4 voxelValue(int3 voxel)\n  \{\n    // Return Empty for values outside of grid\n    if (voxel.x < 0 || resolution.x <= voxel.x ||\n        voxel.y < 0 || resolution.y <= voxel.y ||\n        voxel.z < 0 || resolution.z <= voxel.z )\n      return 0;\n\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y);\n  \}\n\n  float4 Blend(float3 curpos)\n  \{\n    float3 weight, voxel_space;\n    int3 base_voxel, offset;\n    // Lower Bound of 8 adjacent voxels\n    for (int c = 0; c < 3; c++)\n    \{\n      voxel_space\[c] = curpos\[c] * VoxelSizeInv\[c];\n      base_voxel\[c] = int(floor(voxel_space\[c] - 0.5f));\n    \}\n\n    float4 result = 0;\n    for (int i = 0; i < 8; i++)\n    \{\n      // Weighted distance on each axis for each adjacent voxel\n      offset = int3(i / 4, (i / 2) % 2, i % 2);\n      weight.x = 1 - fabs(offset.x - (voxel_space.x - (base_voxel.x + 0.5f)));\n      weight.y = 1 - fabs(offset.y - (voxel_space.y - (base_voxel.y + 0.5f)));\n      weight.z = 1 - fabs(offset.z - (voxel_space.z - (base_voxel.z + 0.5f)));\n\n      result += voxelValue(base_voxel + offset) * weight.x * weight.y * weight.z;\n    \}\n\n    return result;\n  \}\n\n  void process()\n  \{\n    float4 position = positions();\n    float3 target = multVectMatrix(position, transform_M_Inv);\n    dst() = Blend(target - bbox_min);\n  \} \n\};"
+  rebuild ""
+  VTransformData_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
+  VTransformData_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
+  VTransformData_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
+  group_VTransformData_transform_M 1
+  VTransformData_transform_M {
+      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
+      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
+      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
+      {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
+    }
+  name BlinkScript_transform_data
+  selected true
+  xpos 124
+  ypos 220
+ }
+ Dot {
+  name Dot5
+  note_font_size 20
+  xpos 158
+  ypos 315
+ }
+push $N356a2800
+ NoOp {
+  name METADATA_READ
+  xpos 440
+  ypos 82
+  addUserKnob {20 User}
+  addUserKnob {1 matrix}
+  matrix "\[metadata vTransformMatrix frame]"
+ }
+ ModifyMetaData {
+  metadata {
+   {set vTransformMatrix "\[value LOCAL_TRANSFORM.world_matrix]"}
+  }
+  name ModifyMetaData2
+  xpos 440
+  ypos 226
+ }
+ Switch {
+  inputs 2
+  which {{transform_type}}
+  name Switch1
+  xpos 440
+  ypos 311
+ }
+ Output {
+  name Output2
+  xpos 440
+  ypos 393
+ }
+ Axis2 {
+  inputs 0
+  display off
+  selectable false
+  useMatrix true
+  matrix {
+      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 0] 3]"}}
+      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 1] 3]"}}
+      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 2] 3]"}}
+      {{"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 0]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 1]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 2]"} {"\[lindex \[lindex \[python \{nuke.toNode('METADATA_READ')\['matrix'].value()\}] 3] 3]"}}
+    }
+  name WORLD_TRANSFORM
+  xpos 591
+  ypos 63
+  addUserKnob {20 "Ppos Locator"}
+  addUserKnob {18 pointPosition l "Point Position"}
+  pointPosition {0 0 0}
+  addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ }
+ Axis2 {
+  name LOCAL_TRANSFORM
+  xpos 591
+  ypos 205
+  addUserKnob {20 "Ppos Locator"}
+  addUserKnob {18 pointPosition l "Point Position"}
+  pointPosition {0 0 0}
+  addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
  }
 end_group
