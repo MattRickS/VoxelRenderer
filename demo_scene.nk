@@ -1,32 +1,31 @@
-#! C:/Program Files/Nuke9.0v1/nuke-9.0.1.dll -nx
-version 9.0 v1
+#! /usr/local/Nuke12.0v8/libnuke-12.0.8.so -nx
+version 12.0 v8
 define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
 <layout version="1.0">
-    <window x="0" y="0" w="1920" h="1040" screen="0">
+    <window x="1976" y="188" w="2504" h="1376" maximized="1" screen="0">
         <splitter orientation="1">
-            <split size="1204"/>
-            <splitter orientation="1">
-                <split size="45"/>
-                <dock id="" hideTitles="1" activePageId="Toolbar.1">
-                    <page id="Toolbar.1"/>
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="1841" stretch="1"/>
+            <splitter orientation="2">
+                <split size="782"/>
+                <dock id="" activePageId="Viewer.1">
+                    <page id="Viewer.1"/>
                 </dock>
-                <split size="1155"/>
-                <splitter orientation="2">
-                    <split size="572"/>
-                    <dock id="" activePageId="Viewer.1">
-                        <page id="Viewer.1"/>
-                    </dock>
-                    <split size="403"/>
-                    <dock id="" activePageId="DAG.1" focus="true">
-                        <page id="DAG.1"/>
-                        <page id="Curve Editor.1"/>
-                        <page id="DopeSheet.1"/>
-                    </dock>
-                </splitter>
+                <split size="550"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                    <page id="DAG.2"/>
+                </dock>
             </splitter>
-            <split size="696"/>
+            <split size="615"/>
             <dock id="" activePageId="Properties.1">
                 <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
             </dock>
         </splitter>
     </window>
@@ -34,12 +33,19 @@ define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
 }
 Root {
  inputs 0
- name "D:/Programming/Nuke/Voxel Generator/git/demo_scene.nk"
+ name /home/ob1/software/nuke/dev/VoxelRenderer/demo_scene.nk
  frame 182
  last_frame 360
  format "1920 1080 0 0 1920 1080 1 HD_1080"
  proxy_type scale
  proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement Nuke
+ workingSpaceLUT linear
+ monitorLut sRGB
+ int8Lut sRGB
+ int16Lut sRGB
+ logLut Cineon
+ floatLut linear
 }
 Axis2 {
  inputs 0
@@ -79,13 +85,13 @@ Ramp {
  xpos -294
  ypos -405
 }
-set N390b000 [stack 0]
+set N5ff69b0 [stack 0]
 Axis2 {
  inputs 0
  translate {0 8 0}
  name LIGHT
- xpos -151
- ypos -501
+ xpos -167
+ ypos -498
  addUserKnob {20 "Ppos Locator"}
  addUserKnob {18 pointPosition l "Point Position"}
  pointPosition {0 0 0}
@@ -142,7 +148,7 @@ Group {
   xpos 159
   ypos -29
  }
-set N3dcf2000 [stack 0]
+set N603e120 [stack 0]
  Dot {
   name Dot2
   note_font_size 20
@@ -158,6 +164,7 @@ set N3dcf2000 [stack 0]
   VGrid_bbox_max {{parent.voxel_bbox.r} {parent.voxel_bbox.t} {parent.voxel_bbox.f}}
   VGrid_resolution {{CONTROL.resolution.x} {CONTROL.resolution.y} {CONTROL.resolution.z}}
   VGrid_total {{CONTROL.total}}
+  rebuild_finalise ""
   name BlinkScript_grid
   xpos 51
   ypos 33
@@ -168,7 +175,7 @@ set N3dcf2000 [stack 0]
   xpos 85
   ypos 103
  }
-push $N3dcf2000
+push $N603e120
 add_layer {voxels voxels.x voxels.y voxels.z voxels.density}
  ShuffleCopy {
   inputs 2
@@ -224,7 +231,7 @@ Dot {
  xpos -7
  ypos -949
 }
-set N3986800 [stack 0]
+set N74132b0 [stack 0]
 Group {
  name V_Noise
  tile_color 0xc17939ff
@@ -286,7 +293,7 @@ Group {
   xpos 553
   ypos -231
  }
-set Nddbac400 [stack 0]
+set N743d720 [stack 0]
  Shuffle {
   in2 voxels
   red red2
@@ -315,6 +322,7 @@ set Nddbac400 [stack 0]
       {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
       {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
     }
+  rebuild_finalise ""
   name BlinkScript_noise
   selected true
   xpos 519
@@ -340,7 +348,7 @@ set Nddbac400 [stack 0]
   xpos 553
   ypos 82
  }
-push $Nddbac400
+push $N743d720
  Dot {
   name Dot2
   note_font_size 20
@@ -406,7 +414,7 @@ Group {
   xpos 596
   ypos -53
  }
-set N2f57e800 [stack 0]
+set N74bf3d0 [stack 0]
  Shuffle {
   in2 voxels
   red red2
@@ -418,7 +426,7 @@ set N2f57e800 [stack 0]
   ypos -6
   postage_stamp true
  }
-set N2f57e400 [stack 0]
+set N74c4050 [stack 0]
  Dot {
   name Dot11
   note_font_size 20
@@ -437,6 +445,7 @@ set N2f57e400 [stack 0]
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
+  rebuild_finalise ""
   name BlinkScript_transform
   selected true
   xpos 672
@@ -448,7 +457,7 @@ set N2f57e400 [stack 0]
   xpos 706
   ypos 149
  }
-push $N2f57e400
+push $N74c4050
  Switch {
   inputs 2
   which {{parent.world_space}}
@@ -462,14 +471,14 @@ push $N2f57e400
   xpos 596
   ypos 246
  }
-set N7aaf5000 [stack 0]
+set N74fb570 [stack 0]
  Dot {
   name Dot4
   note_font_size 20
   xpos 701
   ypos 246
  }
-set N7aaf4c00 [stack 0]
+set N7500470 [stack 0]
  Dot {
   name Dot6
   note_font_size 20
@@ -499,7 +508,7 @@ set N7aaf4c00 [stack 0]
   xpos 811
   ypos 441
  }
-push $N7aaf4c00
+push $N7500470
  Expression {
   temp_name0 r_dist
   temp_expr0 "((shapesize*scale.r) / 3 - abs(r - center.x))/(shapesize*scale.r)"
@@ -523,7 +532,7 @@ push $N7aaf4c00
   xpos 701
   ypos 377
  }
-push $N7aaf5000
+push $N74fb570
  Expression {
   temp_name0 dx
   temp_expr0 "shapesize * scale.r - abs(r - center.x)"
@@ -542,7 +551,7 @@ push $N7aaf5000
   xpos 562
   ypos 306
  }
-push $N7aaf5000
+push $N74fb570
  Dot {
   name Dot2
   note_font_size 20
@@ -574,7 +583,7 @@ push $N7aaf5000
   xpos 562
   ypos 437
  }
-push $N2f57e800
+push $N74bf3d0
  Dot {
   name Dot8
   note_font_size 20
@@ -610,7 +619,7 @@ Expression {
  xpos -41
  ypos -869
 }
-push $N3986800
+push $N74132b0
 Dot {
  name Dot3
  note_font_size 20
@@ -677,7 +686,7 @@ Group {
   xpos 553
   ypos -231
  }
-set N883df000 [stack 0]
+set N75b1c40 [stack 0]
  Shuffle {
   in2 voxels
   red red2
@@ -706,6 +715,7 @@ set N883df000 [stack 0]
       {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
       {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
     }
+  rebuild_finalise ""
   name BlinkScript_noise
   selected true
   xpos 519
@@ -731,7 +741,7 @@ set N883df000 [stack 0]
   xpos 553
   ypos 82
  }
-push $N883df000
+push $N75b1c40
  Dot {
   name Dot2
   note_font_size 20
@@ -797,7 +807,7 @@ Group {
   xpos 596
   ypos -53
  }
-set N7303a800 [stack 0]
+set N762b9b0 [stack 0]
  Shuffle {
   in2 voxels
   red red2
@@ -809,7 +819,7 @@ set N7303a800 [stack 0]
   ypos -6
   postage_stamp true
  }
-set N7303a400 [stack 0]
+set N7630630 [stack 0]
  Dot {
   name Dot11
   note_font_size 20
@@ -828,6 +838,7 @@ set N7303a400 [stack 0]
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
+  rebuild_finalise ""
   name BlinkScript_transform
   selected true
   xpos 672
@@ -839,7 +850,7 @@ set N7303a400 [stack 0]
   xpos 706
   ypos 149
  }
-push $N7303a400
+push $N7630630
  Switch {
   inputs 2
   which {{parent.world_space}}
@@ -853,14 +864,14 @@ push $N7303a400
   xpos 596
   ypos 246
  }
-set Nd7f0f000 [stack 0]
+set N7667ab0 [stack 0]
  Dot {
   name Dot4
   note_font_size 20
   xpos 701
   ypos 246
  }
-set Nd7f0ec00 [stack 0]
+set N766c9b0 [stack 0]
  Dot {
   name Dot6
   note_font_size 20
@@ -890,7 +901,7 @@ set Nd7f0ec00 [stack 0]
   xpos 811
   ypos 441
  }
-push $Nd7f0ec00
+push $N766c9b0
  Expression {
   temp_name0 r_dist
   temp_expr0 "((shapesize*scale.r) / 3 - abs(r - center.x))/(shapesize*scale.r)"
@@ -914,7 +925,7 @@ push $Nd7f0ec00
   xpos 701
   ypos 377
  }
-push $Nd7f0f000
+push $N7667ab0
  Expression {
   temp_name0 dx
   temp_expr0 "shapesize * scale.r - abs(r - center.x)"
@@ -933,7 +944,7 @@ push $Nd7f0f000
   xpos 562
   ypos 306
  }
-push $Nd7f0f000
+push $N7667ab0
  Dot {
   name Dot2
   note_font_size 20
@@ -965,7 +976,7 @@ push $Nd7f0f000
   xpos 562
   ypos 437
  }
-push $N7303a800
+push $N762b9b0
  Dot {
   name Dot8
   note_font_size 20
@@ -1050,7 +1061,7 @@ Group {
   xpos 111
   ypos -183
  }
-set Nc84dbc00 [stack 0]
+set N77223b0 [stack 0]
  Shuffle {
   in2 voxels
   red red2
@@ -1071,6 +1082,7 @@ set Nc84dbc00 [stack 0]
   VErode_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
   VErode_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
   VErode_size {{parent.size}}
+  rebuild_finalise ""
   name BlinkScript_erode
   xpos 77
   ypos -38
@@ -1081,7 +1093,7 @@ set Nc84dbc00 [stack 0]
   xpos 111
   ypos 28
  }
-push $Nc84dbc00
+push $N77223b0
  Dot {
   name Dot3
   note_font_size 20
@@ -1170,7 +1182,7 @@ Group {
   xpos 553
   ypos -231
  }
-set N5c5ae000 [stack 0]
+set N779eac0 [stack 0]
  Shuffle {
   in2 voxels
   red red2
@@ -1199,6 +1211,7 @@ set N5c5ae000 [stack 0]
       {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
       {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
     }
+  rebuild_finalise ""
   name BlinkScript_noise
   selected true
   xpos 519
@@ -1224,7 +1237,7 @@ set N5c5ae000 [stack 0]
   xpos 553
   ypos 82
  }
-push $N5c5ae000
+push $N779eac0
  Dot {
   name Dot2
   note_font_size 20
@@ -1270,7 +1283,7 @@ Group {
  name V_PtLight
  tile_color 0xc19139ff
  xpos -41
- ypos -481
+ ypos -478
  addUserKnob {20 VPtLight}
  addUserKnob {41 value l "Light Colour" T LIGHT_COL.value}
  addUserKnob {41 value_1 l "Scatter Colour" T SCATTER_COL.value}
@@ -1310,10 +1323,10 @@ Group {
   xpos 637
   ypos 74
  }
-set Nf8341400 [stack 0]
+set N7837040 [stack 0]
  Clamp {
   channels alpha
-  maximum 1.#INF
+  maximum inf
   name Clamp
   xpos 603
   ypos 116
@@ -1348,12 +1361,13 @@ set Nf8341400 [stack 0]
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
+  rebuild_finalise ""
   name BlinkScript_point
   selected true
   xpos 603
   ypos 278
  }
-set Nf8340800 [stack 0]
+set N785c270 [stack 0]
  Dot {
   name Dot9
   note_font_size 20
@@ -1372,8 +1386,8 @@ set Nf8340800 [stack 0]
   xpos 527
   ypos 406
  }
-set Nd9dc9c00 [stack 0]
-push $Nf8341400
+set N788dae0 [stack 0]
+push $N7837040
  Dot {
   name Dot3
   note_font_size 20
@@ -1393,7 +1407,7 @@ push $Nf8341400
   xpos 307
   ypos 288
  }
-set Nd9dc9000 [stack 0]
+set N78a35d0 [stack 0]
  Add {
   value {1 0.915 0.775 1}
   value_panelDropped true
@@ -1415,14 +1429,14 @@ set Nd9dc9000 [stack 0]
   xpos 307
   ypos 537
  }
-push $Nd9dc9c00
+push $N788dae0
  Invert {
   channels alpha
   name Invert1
   xpos 493
   ypos 458
  }
-push $Nd9dc9000
+push $N78a35d0
  Dot {
   name Dot6
   note_font_size 20
@@ -1457,7 +1471,7 @@ push $Nd9dc9000
   xpos 417
   ypos 601
  }
-push $Nf8340800
+push $N785c270
  Merge2 {
   inputs 2
   operation multiply
@@ -1471,7 +1485,7 @@ push $Nf8340800
   xpos 637
   ypos 738
  }
-push $Nf8341400
+push $N7837040
  Dot {
   name Dot4
   note_font_size 20
@@ -1501,8 +1515,9 @@ Group {
  addUserKnob {20 VEnvLight}
  addUserKnob {6 luminance l "Luminance Based" t "Uses the luminance of the HDRI to light the image." +STARTLINE}
  addUserKnob {7 rotate l Rotate t "Rotates the spherical mapping" R 0 360}
+ rotate 92
  addUserKnob {7 intensity l Intensity}
- intensity 0.51
+ intensity 0.79
  addUserKnob {7 absorption l Absorption t "Amount of light absorbed by each voxel."}
  absorption 0.585
  addUserKnob {3 range l Range t "Radius of area to blend"}
@@ -1539,10 +1554,10 @@ Group {
   xpos 1238
   ypos -288
  }
-set Nda62a000 [stack 0]
+set N794c850 [stack 0]
  Clamp {
   channels alpha
-  maximum 1.#INF
+  maximum inf
   name Clamp
   xpos 1204
   ypos -244
@@ -1561,8 +1576,10 @@ set Nda62a000 [stack 0]
  BlinkScript {
   inputs 2
   kernelSourceFile bin/light/environment.cpp
-  KernelDescription "1 \"VEnvLight\" iterate pixelWise c11143e3588aa0102d052d41d74a7f94f65593a51b5fcc80a5769d05a7c6ae54 3 \"voxels\" Read Random \"environment\" Read Random \"dst\" Write Point 9 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"luminance_on\" Bool 1 AA== \"rotate\" Float 1 AAAAAA== \"intensity\" Float 1 AACAPw== \"absorption\" Float 1 AAAAPw== \"samples\" Int 1 MgAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-  kernelSource "kernel VEnvLight : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> voxels;\n  Image<eRead, eAccessRandom> environment;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    bool luminance_on;\n    float rotate;\n    float intensity;\n    float absorption;\n    int samples;\n    float4x4 transform_M;\n\n  local:\n    float3 aabb\[2];\n    float3 VoxelSizeInv;\n    float _absorption;\n    int grid_width;\n    float rad2deg;\n    int _samples;\n\n  void define()\n  \{\n    defineParam(intensity, \"intensity\", 1.0f);\n    defineParam(absorption, \"absorption\", 0.5f);                   // Absorption? Rate of Decay\n    defineParam(samples, \"samples\", 50);\n  \}\n\n  void init()\n  \{\n    aabb\[0] = bbox_min;\n    aabb\[1] = bbox_max;\n    grid_width = voxels.bounds.width();\n\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n\n    _absorption = 1 / (1 - absorption);\n    rad2deg = 180.0f / PI;\n    _samples = max(1, samples);\n  \}\n\n  float3 multVectMatrix(float3 vec, float4x4 M)\n  \{\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n  // Axis aligned bounding box intersection for GPU : Shortened for exit only\n  float intersection_exit_AABB(float3 origin, float3 inv_dir, float3 bbox\[2])\n  \{\n    //bool sign\[3] \{inv_dir.x < 0, inv_dir.y < 0, inv_dir.z < 0\};\n    float tmin, tmax, tymin, tymax, tzmin, tzmax;\n    bool sign = inv_dir.x < 0 ? 0 : 1;\n    tmax  = (aabb\[sign].x - origin.x) * inv_dir.x;\n    sign = inv_dir.y < 0 ? 0 : 1;\n    tymax = (aabb\[sign].y - origin.y) * inv_dir.y;\n    sign = inv_dir.z < 0 ? 0 : 1;\n    tzmax = (aabb\[sign].z - origin.z) * inv_dir.z;\n    tmax = min(min(tmax, tymax), tzmax);\n    return tmax;\n  \}\n\n  float voxelValue(int3 voxel)\n  \{\n    // Return Empty for values outside of grid\n    if (voxel.x < 0 || resolution.x <= voxel.x ||\n        voxel.y < 0 || resolution.y <= voxel.y ||\n        voxel.z < 0 || resolution.z <= voxel.z )\n      return 0;\n\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y)\[3]; // Just alpha (density)\n  \}\n\n  float Blend(float3 curpos)\n  \{\n    float3 weight, voxel_space;\n    int3 base_voxel, offset;\n    // Lower Bound of 8 adjacent voxels\n    for (int c = 0; c < 3; c++)\n    \{\n      voxel_space\[c] = curpos\[c] * VoxelSizeInv\[c];\n      base_voxel\[c] = int(floor(voxel_space\[c] - 0.5f));\n    \}\n\n    float result = 0;\n    for (int i = 0; i < 8; i++)\n    \{\n      // Weighted distance on each axis for each adjacent voxel\n      offset = int3(i / 4, (i / 2) % 2, i % 2);\n      weight.x = 1 - fabs(offset.x - (voxel_space.x - (base_voxel.x + 0.5f)));\n      weight.y = 1 - fabs(offset.y - (voxel_space.y - (base_voxel.y + 0.5f)));\n      weight.z = 1 - fabs(offset.z - (voxel_space.z - (base_voxel.z + 0.5f)));\n\n      result += voxelValue(base_voxel + offset) * weight.x * weight.y * weight.z;\n    \}\n\n    return result;\n  \}\n\n  void process(int2 pos)\n  \{\n    // Skip empty voxels\n    float4 v = voxels(pos.x, pos.y);\n    if (v.w <= 0)\n      return;\n\n\n    // ========== AMBIENT LIGHT ==========\n\n    // Fire a ray from outer sphere to voxel, accumulate fog\n\n    // Starting values\n    float3 voxel = float3(v.x, v.y, v.z); // Center of voxel\n\n    int3 voxel_i;\n    for (int c = 0; c < 3; c++)\n      voxel_i\[c] = (voxel\[c] - bbox_min\[c]) * VoxelSizeInv\[c];\n\n    float3 normal = float3(\n      voxelValue(voxel_i - int3(1,0,0)) - voxelValue(voxel_i + int3(1,0,0)),\n      voxelValue(voxel_i - int3(0,1,0)) - voxelValue(voxel_i + int3(0,1,0)),\n      voxelValue(voxel_i - int3(0,0,1)) - voxelValue(voxel_i + int3(0,0,1))\n      );\n\n    float3 dir = -normalize(normal);\n    // Skip directionless voxels\n    if (dir.x == 0 && dir.y == 0 && dir.z == 0) return;\n\n    float3 dir_inv = 1.0f / dir;\n\n    // Convert direction to latlong coordinates\n    float3 env_dir = normalize(multVectMatrix(dir, transform_M));\n    float x = (fmod((rad2deg * atan2(env_dir.z, env_dir.x) + rotate), 360.0f) / 360.0f + 0.5f) * environment.bounds.width();\n    float y = ((rad2deg * acos(env_dir.y)) / 180.0f) * environment.bounds.height();\n\n    float4 colour = environment(x, y);\n    float luminance = (colour.x * 0.3f + colour.y * 0.59f + colour.z * 0.11f) * intensity;\n\n    // Move starting point to whatever's closest: intersection / light\n    float max_dist = intersection_exit_AABB(voxel, -dir_inv, aabb);\n\n    // ========== Ray Marching ==========\n\n    // Maximum of 1000 samples per voxel\n    float result = luminance * luminance_on + intensity * (1 - luminance_on);\n    float deltaT = 1, step = max(max_dist / _samples, 0.001f);\n    float3 curpos;\n\n    for (float dist = 0; dist <= max_dist; dist += step)\n    \{\n      curpos = voxel - dir * dist;\n      deltaT = exp(-absorption * Blend(curpos - bbox_min) * step);\n      result *= deltaT;\n\n      // End loop if Transmittance is near 0\n      if (result < 1e-6)\n        break;\n      //dist += (result < 1e-6) * max_dist;\n    \}\n\n    dst() = result * environment(x, y);\n    dst(3) = v.w;\n    \n  \}\n\n\};"
+  recompileCount 21
+  ProgramGroup 1
+  KernelDescription "2 \"VEnvLight\" iterate pixelWise c1d75786f9965f04a0d8275df3516fcbd715f02b109ab7dbf959a0768785adbb 3 \"voxels\" Read Random \"environment\" Read Random \"dst\" Write Point 9 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"luminance_on\" Bool 1 AA== \"rotate\" Float 1 AAAAAA== \"intensity\" Float 1 AACAPw== \"absorption\" Float 1 AAAAPw== \"samples\" Int 1 MgAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== 9 \"bbox_min\" 3 1 \"bbox_max\" 3 1 \"resolution\" 3 1 \"luminance_on\" 1 1 \"rotate\" 1 1 \"intensity\" 1 1 \"absorption\" 1 1 \"samples\" 1 1 \"transform_M\" 16 1 6 \"aabb\" Float 3 2 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \"VoxelSizeInv\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"_absorption\" Float 1 1 AAAAAA== \"grid_width\" Int 1 1 AAAAAA== \"rad2deg\" Float 1 1 AAAAAA== \"_samples\" Int 1 1 AAAAAA=="
+  kernelSource "kernel VEnvLight : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> voxels;\n  Image<eRead, eAccessRandom> environment;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    bool luminance_on;\n    float rotate;\n    float intensity;\n    float absorption;\n    int samples;\n    float4x4 transform_M;\n\n  local:\n    float3 aabb\[2];\n    float3 VoxelSizeInv;\n    float _absorption;\n    int grid_width;\n    float rad2deg;\n    int _samples;\n\n  void define()\n  \{\n    defineParam(intensity, \"intensity\", 1.0f);\n    defineParam(absorption, \"absorption\", 0.5f);                   // Absorption? Rate of Decay\n    defineParam(samples, \"samples\", 50);\n  \}\n\n  void init()\n  \{\n    aabb\[0] = bbox_min;\n    aabb\[1] = bbox_max;\n    grid_width = voxels.bounds.width();\n\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n\n    _absorption = 1 / (1 - absorption);\n    rad2deg = 180.0f / PI;\n    _samples = max(1, samples);\n  \}\n\n  float3 multVectMatrix(float3 vec, float4x4 M)\n  \{\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n  // Axis aligned bounding box intersection for GPU : Shortened for exit only\n  float intersection_exit_AABB(float3 origin, float3 inv_dir)\n  \{\n    //bool sign\[3] \{inv_dir.x < 0, inv_dir.y < 0, inv_dir.z < 0\};\n    float tmin, tmax, tymin, tymax, tzmin, tzmax;\n    bool sign = inv_dir.x < 0 ? 0 : 1;\n    tmax  = (aabb\[sign].x - origin.x) * inv_dir.x;\n    sign = inv_dir.y < 0 ? 0 : 1;\n    tymax = (aabb\[sign].y - origin.y) * inv_dir.y;\n    sign = inv_dir.z < 0 ? 0 : 1;\n    tzmax = (aabb\[sign].z - origin.z) * inv_dir.z;\n    tmax = min(min(tmax, tymax), tzmax);\n    return tmax;\n  \}\n\n  float voxelValue(int3 voxel)\n  \{\n    // Return Empty for values outside of grid\n    if (voxel.x < 0 || resolution.x <= voxel.x ||\n        voxel.y < 0 || resolution.y <= voxel.y ||\n        voxel.z < 0 || resolution.z <= voxel.z )\n      return 0;\n\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y)\[3]; // Just alpha (density)\n  \}\n\n  float Blend(float3 curpos)\n  \{\n    float3 weight, voxel_space;\n    int3 base_voxel, offset;\n    // Lower Bound of 8 adjacent voxels\n    for (int c = 0; c < 3; c++)\n    \{\n      voxel_space\[c] = curpos\[c] * VoxelSizeInv\[c];\n      base_voxel\[c] = int(floor(voxel_space\[c] - 0.5f));\n    \}\n\n    float result = 0;\n    for (int i = 0; i < 8; i++)\n    \{\n      // Weighted distance on each axis for each adjacent voxel\n      offset = int3(i / 4, (i / 2) % 2, i % 2);\n      weight.x = 1 - fabs(offset.x - (voxel_space.x - (base_voxel.x + 0.5f)));\n      weight.y = 1 - fabs(offset.y - (voxel_space.y - (base_voxel.y + 0.5f)));\n      weight.z = 1 - fabs(offset.z - (voxel_space.z - (base_voxel.z + 0.5f)));\n\n      result += voxelValue(base_voxel + offset) * weight.x * weight.y * weight.z;\n    \}\n\n    return result;\n  \}\n\n  void process(int2 pos)\n  \{\n    // Skip empty voxels\n    float4 v = voxels(pos.x, pos.y);\n    if (v.w <= 0)\n      return;\n\n\n    // ========== AMBIENT LIGHT ==========\n\n    // Fire a ray from outer sphere to voxel, accumulate fog\n\n    // Starting values\n    float3 voxel = float3(v.x, v.y, v.z); // Center of voxel\n\n    int3 voxel_i;\n    for (int c = 0; c < 3; c++)\n      voxel_i\[c] = (voxel\[c] - bbox_min\[c]) * VoxelSizeInv\[c];\n\n    float3 normal = float3(\n      voxelValue(voxel_i - int3(1,0,0)) - voxelValue(voxel_i + int3(1,0,0)),\n      voxelValue(voxel_i - int3(0,1,0)) - voxelValue(voxel_i + int3(0,1,0)),\n      voxelValue(voxel_i - int3(0,0,1)) - voxelValue(voxel_i + int3(0,0,1))\n      );\n\n    float3 dir = -normalize(normal);\n    // Skip directionless voxels\n    if (dir.x == 0 && dir.y == 0 && dir.z == 0) return;\n\n    float3 dir_inv = 1.0f / dir;\n\n    // Convert direction to latlong coordinates\n    float3 env_dir = normalize(multVectMatrix(dir, transform_M));\n    float x = (fmod((rad2deg * atan2(env_dir.z, env_dir.x) + rotate), 360.0f) / 360.0f + 0.5f) * environment.bounds.width();\n    float y = ((rad2deg * acos(env_dir.y)) / 180.0f) * environment.bounds.height();\n\n    float4 colour = environment(x, y);\n    float luminance = (colour.x * 0.3f + colour.y * 0.59f + colour.z * 0.11f) * intensity;\n\n    // Move starting point to whatever's closest: intersection / light\n    float max_dist = intersection_exit_AABB(voxel, -dir_inv);\n\n    // ========== Ray Marching ==========\n\n    // Maximum of 1000 samples per voxel\n    float result = luminance * luminance_on + intensity * (1 - luminance_on);\n    float deltaT = 1, step = max(max_dist / _samples, 0.001f);\n    float3 curpos;\n\n    for (float dist = 0; dist <= max_dist; dist += step)\n    \{\n      curpos = voxel - dir * dist;\n      deltaT = exp(-absorption * Blend(curpos - bbox_min) * step);\n      result *= deltaT;\n\n      // End loop if Transmittance is near 0\n      if (result < 1e-6)\n        break;\n      //dist += (result < 1e-6) * max_dist;\n    \}\n\n    dst() = result * environment(x, y);\n    dst(3) = v.w;\n    \n  \}\n\n\};"
   rebuild ""
   VEnvLight_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
   VEnvLight_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
@@ -1578,8 +1595,8 @@ set Nda62a000 [stack 0]
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
+  rebuild_finalise ""
   name BlinkScript_environment
-  selected true
   xpos 1204
   ypos -84
  }
@@ -1617,7 +1634,7 @@ set Nda62a000 [stack 0]
    xpos 396
    ypos -557
   }
-set N8e805400 [stack 0]
+set N79b4b70 [stack 0]
   Shuffle {
    in voxels
    in2 rgba
@@ -1634,7 +1651,7 @@ set N8e805400 [stack 0]
    xpos 567
    ypos -436
   }
-push $N8e805400
+push $N79b4b70
   BlinkScript {
    inputs 2
    kernelSourceFile C:/Users/mshaw/Documents/Tests/Blink/Cloud_Gen_03/Scripts/WORKING/VoxelAverage_transform_002.cpp
@@ -1647,6 +1664,7 @@ push $N8e805400
    VoxelAverage_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
    VoxelAverage_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
    VoxelAverage_range {{parent.range}}
+   rebuild_finalise ""
    name BlinkScript3
    selected true
    xpos 362
@@ -1664,7 +1682,7 @@ push $N8e805400
   xpos 1238
   ypos 51
  }
-push $Nda62a000
+push $N794c850
  Dot {
   name Dot2
   note_font_size 20
@@ -1745,7 +1763,7 @@ Group {
   ypos -127
  }
  Clamp {
-  maximum 1.#INF
+  maximum inf
   name Clamp1
   xpos 535
   ypos -33
@@ -1778,6 +1796,7 @@ Group {
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
+  rebuild_finalise ""
   name BlinkScript_render
   xpos 535
   ypos 84
@@ -1795,7 +1814,7 @@ Dot {
  xpos -7
  ypos -58
 }
-push $N390b000
+push $N5ff69b0
 Dot {
  name Dot6
  note_font_size 20
