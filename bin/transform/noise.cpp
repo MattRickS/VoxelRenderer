@@ -1,11 +1,11 @@
 // C++11
-const uint rand_multiplier = 48271;
-const uint rand_increment  = 0;
-const uint rand_modulus    = 2147483647;
+#define RAND_MULTIPLIER 48271
+#define RAND_INCREMENT  0
+#define RAND_MODULUS    2147483647
 
 static int lcgRandom( int seed )
 {
-  return abs( ( seed * rand_multiplier + rand_increment ) % rand_modulus );
+  return abs( ( seed * RAND_MULTIPLIER + RAND_INCREMENT ) % RAND_MODULUS );
 }
 
 // ===== Interpolation Functions =====
@@ -187,7 +187,7 @@ kernel VFNoise : ImageComputationKernel<ePixelWise>
     for (int c = 0; c < 3; c++)
     {
       random = lcgRandom(random);
-      seed_offset[c] = (random / float(rand_modulus)) * 10000;
+      seed_offset[c] = (random / float(RAND_MODULUS)) * 10000;
     }
     frequency = 1.0f / size;
     M_inv = M.invert();

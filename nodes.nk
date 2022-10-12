@@ -1,32 +1,36 @@
-#! C:/Program Files/Nuke9.0v1/nuke-9.0.1.dll -nx
-version 9.0 v1
+#! /usr/local/Nuke13.2v2/libnuke-13.2.2.so -nx
+version 13.2 v2
 define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
 <layout version="1.0">
-    <window x="0" y="0" w="1920" h="1040" screen="0">
+    <window x="1976" y="188" w="2504" h="1376" maximized="1" screen="0">
         <splitter orientation="1">
-            <split size="1204"/>
-            <splitter orientation="1">
-                <split size="45"/>
-                <dock id="" hideTitles="1" activePageId="Toolbar.1">
-                    <page id="Toolbar.1"/>
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="1841" stretch="1"/>
+            <splitter orientation="2">
+                <split size="783"/>
+                <dock id="" activePageId="Viewer.1">
+                    <page id="Viewer.1"/>
                 </dock>
-                <split size="1155"/>
-                <splitter orientation="2">
-                    <split size="572"/>
-                    <dock id="" activePageId="Viewer.1">
-                        <page id="Viewer.1"/>
-                    </dock>
-                    <split size="403"/>
-                    <dock id="" activePageId="DAG.1" focus="true">
-                        <page id="DAG.1"/>
-                        <page id="Curve Editor.1"/>
-                        <page id="DopeSheet.1"/>
-                    </dock>
-                </splitter>
+                <split size="550"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                    <page id="DAG.2"/>
+                    <page id="DAG.3"/>
+                    <page id="DAG.4"/>
+                    <page id="DAG.5"/>
+                    <page id="DAG.6"/>
+                    <page id="DAG.7"/>
+                </dock>
             </splitter>
-            <split size="696"/>
+            <split size="615"/>
             <dock id="" activePageId="Properties.1">
                 <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
             </dock>
         </splitter>
     </window>
@@ -34,136 +38,19 @@ define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
 }
 Root {
  inputs 0
- name "D:/Programming/Nuke/Voxel Generator/git/nodes2.nk"
+ name /home/ob1/software/nuke/dev/VoxelRenderer/nodes.nk
  project_directory "\[file dirname \[value root.name]]"
  format "1920 1080 0 0 1920 1080 1 HD_1080"
  proxy_type scale
  proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
-}
-Group {
- inputs 0
- name V_Grid
- tile_color 0xc44b11ff
- xpos -260
- ypos -208
- addUserKnob {20 VGrid}
- addUserKnob {31 voxel_bbox l "Bounding Box"}
- voxel_bbox {-0.5 -0.5 -0.5 0.5 0.5 0.5}
- addUserKnob {18 gridres l Resolution R 1 256}
- gridres 64
- addUserKnob {6 gridres_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
- addUserKnob {6 uniform -STARTLINE}
- uniform true
- addUserKnob {41 color l Color T Constant1.color}
- addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript_grid.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript_grid.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_grid.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_grid.maxTileLines}
-}
- Axis2 {
-  inputs 0
-  display off
-  selectable false
-  name vTransformMatrix
-  xpos -22
-  ypos 124
-  addUserKnob {20 "Ppos Locator"}
-  addUserKnob {18 pointPosition l "Point Position"}
-  pointPosition {0 0 0}
-  addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
- }
- Constant {
-  inputs 0
-  name Constant1
-  xpos 159
-  ypos -138
- }
- Reformat {
-  type "to box"
-  box_width {{ceil(sqrt(CONTROL.total))}}
-  box_height {{ceil(sqrt(CONTROL.total))}}
-  box_fixed true
-  resize fill
-  center false
-  name Reformat1
-  xpos 159
-  ypos -29
- }
-set N356cf800 [stack 0]
- Dot {
-  name Dot2
-  note_font_size 20
-  xpos 85
-  ypos -25
- }
- BlinkScript {
-  kernelSourceFile bin/generate/grid.cpp
-  KernelDescription "1 \"VGrid\" iterate pixelWise 3b140e8cbfda428ac95853bd9e9761e44d4c51aad2633cdb8042495cb9b9755b 2 \"format\" Read Point \"dst\" Write Point 4 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"total\" Int 1 AAAAAA=="
-  kernelSource "kernel VGrid : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead> format;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min; // from origin\n    float3 bbox_max; // from origin\n    int3 resolution;\n    int total;\n\n  local:\n    float3 scale;\n\n  void init()\n  \{\n    for (int c = 0; c < 3; c++)\n      scale\[c] = (bbox_max\[c] - bbox_min\[c]) / resolution\[c];\n  \}\n\n  void process(int2 pos)\n  \{\n    int id = pos.y * dst.bounds.width() + pos.x;\n    if (id >= total)\n    \{\n      dst() = 0;\n      return;\n    \}\n    int xy = id / resolution.z;\n    dst(0) = ((xy % resolution.x) + 0.5f) * scale.x + bbox_min.x;\n    dst(1) = ((xy / resolution.x) + 0.5f) * scale.y + bbox_min.y;\n    dst(2) = ((id % resolution.z) + 0.5f) * scale.z + bbox_min.z;\n    dst(3) = 1;\n  \}\n\};"
-  rebuild ""
-  VGrid_bbox_min {{parent.voxel_bbox.x} {parent.voxel_bbox.y} {parent.voxel_bbox.n}}
-  VGrid_bbox_max {{parent.voxel_bbox.r} {parent.voxel_bbox.t} {parent.voxel_bbox.f}}
-  VGrid_resolution {{CONTROL.resolution.x} {CONTROL.resolution.y} {CONTROL.resolution.z}}
-  VGrid_total {{CONTROL.total}}
-  name BlinkScript_grid
-  xpos 51
-  ypos 33
- }
- Dot {
-  name Dot1
-  note_font_size 20
-  xpos 85
-  ypos 103
- }
-push $N356cf800
-add_layer {voxels voxels.x voxels.y voxels.z voxels.density}
- ShuffleCopy {
-  inputs 2
-  alpha alpha2
-  black red
-  white green
-  red2 blue
-  green2 alpha
-  out2 voxels
-  name ShuffleCopy1
-  xpos 159
-  ypos 99
- }
- ModifyMetaData {
-  metadata {
-   {set bbox "\[value voxel_bbox]"}
-   {set resolution "\[value CONTROL.resolution]"}
-   {set vTransformMatrix "\[value vTransformMatrix.world_matrix]"}
-  }
-  name ModifyMetaData1
-  xpos 159
-  ypos 143
- }
- Output {
-  name Output
-  xpos 159
-  ypos 195
- }
- NoOp {
-  inputs 0
-  name CONTROL
-  xpos 284
-  ypos 39
-  addUserKnob {20 User}
-  addUserKnob {3 total}
-  total {{"resolution.x * resolution.y * resolution.z"}}
-  addUserKnob {7 res_scale}
-  res_scale {{"gridres.r / (voxel_bbox.r - voxel_bbox.x)"}}
-  addUserKnob {13 resolution}
-  resolution {{"uniform ? rint(res_scale * (voxel_bbox.r - voxel_bbox.x)) : gridres"} {"uniform ? rint(res_scale * (voxel_bbox.t - voxel_bbox.y)) : gridres"} {"uniform ? rint(res_scale * (voxel_bbox.f - voxel_bbox.n)) : gridres"}}
- }
-end_group
-Viewer {
- frame_range 1-100
- name Viewer1
- xpos 301
- ypos 277
+ colorManagement Nuke
+ workingSpaceLUT linear
+ monitorLut sRGB
+ monitorOutLUT rec709
+ int8Lut sRGB
+ int16Lut sRGB
+ logLut Cineon
+ floatLut linear
 }
 Group {
  inputs 0
@@ -211,7 +98,8 @@ Group {
   xpos 596
   ypos -53
  }
-set N333cf800 [stack 0]
+set N84dfcb0 [stack 0]
+add_layer {voxels voxels.x voxels.y voxels.z voxels.density}
  Shuffle {
   in2 voxels
   red red2
@@ -223,7 +111,7 @@ set N333cf800 [stack 0]
   ypos -6
   postage_stamp true
  }
-set N333cf400 [stack 0]
+set N84e4a20 [stack 0]
  Dot {
   name Dot11
   note_font_size 20
@@ -242,6 +130,7 @@ set N333cf400 [stack 0]
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
+  rebuild_finalise ""
   name BlinkScript_transform
   selected true
   xpos 672
@@ -253,7 +142,7 @@ set N333cf400 [stack 0]
   xpos 706
   ypos 149
  }
-push $N333cf400
+push $N84e4a20
  Switch {
   inputs 2
   which {{parent.world_space}}
@@ -267,14 +156,14 @@ push $N333cf400
   xpos 596
   ypos 246
  }
-set N333fa000 [stack 0]
+set N851a9f0 [stack 0]
  Dot {
   name Dot4
   note_font_size 20
   xpos 701
   ypos 246
  }
-set N33471c00 [stack 0]
+set N851f9d0 [stack 0]
  Dot {
   name Dot6
   note_font_size 20
@@ -304,7 +193,7 @@ set N33471c00 [stack 0]
   xpos 811
   ypos 441
  }
-push $N33471c00
+push $N851f9d0
  Expression {
   temp_name0 r_dist
   temp_expr0 "((shapesize*scale.r) / 3 - abs(r - center.x))/(shapesize*scale.r)"
@@ -328,7 +217,7 @@ push $N33471c00
   xpos 701
   ypos 377
  }
-push $N333fa000
+push $N851a9f0
  Expression {
   temp_name0 dx
   temp_expr0 "shapesize * scale.r - abs(r - center.x)"
@@ -347,7 +236,7 @@ push $N333fa000
   xpos 562
   ypos 306
  }
-push $N333fa000
+push $N851a9f0
  Dot {
   name Dot2
   note_font_size 20
@@ -379,7 +268,7 @@ push $N333fa000
   xpos 562
   ypos 437
  }
-push $N333cf800
+push $N84dfcb0
  Dot {
   name Dot8
   note_font_size 20
@@ -403,941 +292,6 @@ push $N333cf800
   name Output
   xpos 562
   ypos 596
- }
-end_group
-Group {
- inputs 0
- name V_Noise
- tile_color 0xc17939ff
- xpos -370
- ypos -130
- addUserKnob {20 VFNoise}
- addUserKnob {7 offset l Offset t "Expands or shrinks the noise" R -1 1}
- addUserKnob {7 density l Density R 0 100}
- density 1
- addUserKnob {26 ""}
- addUserKnob {3 seed l Seed}
- seed 123
- addUserKnob {7 size l Size R 0 100}
- size 0.5
- addUserKnob {3 octaves l Octaves}
- octaves 5
- addUserKnob {7 lacunarity l Lacunarity R 0 2}
- lacunarity 1.95
- addUserKnob {7 persistence l Persistence}
- persistence 0.43
- addUserKnob {26 ""}
- addUserKnob {41 operation T ChannelMerge1.operation}
- addUserKnob {41 mix T ChannelMerge1.mix}
- addUserKnob {20 transform l Transform}
- addUserKnob {41 translate T NOISE_TRANSFORM.translate}
- addUserKnob {41 rotate T NOISE_TRANSFORM.rotate}
- addUserKnob {41 scaling l scale T NOISE_TRANSFORM.scaling}
- addUserKnob {41 uniform_scale l "uniform scale" T NOISE_TRANSFORM.uniform_scale}
- addUserKnob {41 skew T NOISE_TRANSFORM.skew}
- addUserKnob {41 pivot T NOISE_TRANSFORM.pivot}
- addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript_noise.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript_noise.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_noise.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_noise.maxTileLines}
-}
- Axis2 {
-  inputs 0
-  name NOISE_TRANSFORM
-  xpos 397
-  ypos -93
-  addUserKnob {20 "Ppos Locator"}
-  addUserKnob {18 pointPosition l "Point Position"}
-  pointPosition {0 0 0}
-  addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
- }
- Input {
-  inputs 0
-  name Input
-  xpos 519
-  ypos -287
- }
- Dot {
-  name Dot1
-  note_font_size 20
-  xpos 553
-  ypos -231
- }
-set N356a3c00 [stack 0]
- Shuffle {
-  in2 voxels
-  red red2
-  green green2
-  blue blue2
-  name Shuffle1
-  label "<font size = \"5\"> \[value in]"
-  xpos 519
-  ypos -196
-  postage_stamp true
- }
- BlinkScript {
-  kernelSourceFile bin/transform/noise.cpp
-  KernelDescription "1 \"VFNoise\" iterate pixelWise 1ef06e2feb9fa1e26cd67a5927f5113b61bc4529be4a0184eeac0df1f6aa3c87 2 \"voxels\" Read Point \"dst\" Write Point 6 \"seed\" Int 1 AAAAAA== \"Size\" Float 1 AADwQQ== \"Octaves\" Int 1 BAAAAA== \"Lacunarity\" Float 1 AAAAQA== \"Persistence\" Float 1 AAAAPw== \"M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-  kernelSource "// C++11\nconst uint rand_multiplier = 48271;\nconst uint rand_increment  = 0;\nconst uint rand_modulus    = 2147483647;\n\nstatic int lcgRandom( int seed )\n\{\n  return abs( ( seed * rand_multiplier + rand_increment ) % rand_modulus );\n\}\n\n// ===== Interpolation Functions =====\n\nstatic float Smooth (const float &t)\n\{\n  // Fifth degree polynomial\n  return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);\n\}\n\nstatic float Lerp (const float &a, const float &b, const float &t)\n\{\n  return (b - a) * clamp(t, 0.0f, 1.0f) + a;\n\}\n\n\n// ===== Noise Function =====\n\nstatic float Perlin3D(float3 point, float frequency)\n\{\n  const int hash\[512] = \{\n    151,160,137, 91, 90, 15,131, 13,201, 95, 96, 53,194,233,  7,225,\n    140, 36,103, 30, 69,142,  8, 99, 37,240, 21, 10, 23,190,  6,148,\n    247,120,234, 75,  0, 26,197, 62, 94,252,219,203,117, 35, 11, 32,\n     57,177, 33, 88,237,149, 56, 87,174, 20,125,136,171,168, 68,175,\n     74,165, 71,134,139, 48, 27,166, 77,146,158,231, 83,111,229,122,\n     60,211,133,230,220,105, 92, 41, 55, 46,245, 40,244,102,143, 54,\n     65, 25, 63,161,  1,216, 80, 73,209, 76,132,187,208, 89, 18,169,\n    200,196,135,130,116,188,159, 86,164,100,109,198,173,186,  3, 64,\n     52,217,226,250,124,123,  5,202, 38,147,118,126,255, 82, 85,212,\n    207,206, 59,227, 47, 16, 58, 17,182,189, 28, 42,223,183,170,213,\n    119,248,152,  2, 44,154,163, 70,221,153,101,155,167, 43,172,  9,\n    129, 22, 39,253, 19, 98,108,110, 79,113,224,232,178,185,112,104,\n    218,246, 97,228,251, 34,242,193,238,210,144, 12,191,179,162,241,\n     81, 51,145,235,249, 14,239,107, 49,192,214, 31,181,199,106,157,\n    184, 84,204,176,115,121, 50, 45,127,  4,150,254,138,236,205, 93,\n    222,114, 67, 29, 24, 72,243,141,128,195, 78, 66,215, 61,156,180,\n\n    \n    151,160,137, 91, 90, 15,131, 13,201, 95, 96, 53,194,233,  7,225,\n    140, 36,103, 30, 69,142,  8, 99, 37,240, 21, 10, 23,190,  6,148,\n    247,120,234, 75,  0, 26,197, 62, 94,252,219,203,117, 35, 11, 32,\n     57,177, 33, 88,237,149, 56, 87,174, 20,125,136,171,168, 68,175,\n     74,165, 71,134,139, 48, 27,166, 77,146,158,231, 83,111,229,122,\n     60,211,133,230,220,105, 92, 41, 55, 46,245, 40,244,102,143, 54,\n     65, 25, 63,161,  1,216, 80, 73,209, 76,132,187,208, 89, 18,169,\n    200,196,135,130,116,188,159, 86,164,100,109,198,173,186,  3, 64,\n     52,217,226,250,124,123,  5,202, 38,147,118,126,255, 82, 85,212,\n    207,206, 59,227, 47, 16, 58, 17,182,189, 28, 42,223,183,170,213,\n    119,248,152,  2, 44,154,163, 70,221,153,101,155,167, 43,172,  9,\n    129, 22, 39,253, 19, 98,108,110, 79,113,224,232,178,185,112,104,\n    218,246, 97,228,251, 34,242,193,238,210,144, 12,191,179,162,241,\n     81, 51,145,235,249, 14,239,107, 49,192,214, 31,181,199,106,157,\n    184, 84,204,176,115,121, 50, 45,127,  4,150,254,138,236,205, 93,\n    222,114, 67, 29, 24, 72,243,141,128,195, 78, 66,215, 61,156,180\n  \};\n\n  const float4 gradients3D\[16] = \{\n    float4( 1.0f,  1.0f,  0.0f, 0.0f),\n    float4(-1.0f,  1.0f,  0.0f, 0.0f),\n    float4( 1.0f, -1.0f,  0.0f, 0.0f),\n    float4(-1.0f, -1.0f,  0.0f, 0.0f),\n    float4( 1.0f,  0.0f,  1.0f, 0.0f),\n    float4(-1.0f,  0.0f,  1.0f, 0.0f),\n    float4( 1.0f,  0.0f, -1.0f, 0.0f),\n    float4(-1.0f,  0.0f, -1.0f, 0.0f),\n    float4( 0.0f,  1.0f,  1.0f, 0.0f),\n    float4( 0.0f, -1.0f,  1.0f, 0.0f),\n    float4( 0.0f,  1.0f, -1.0f, 0.0f),\n    float4( 0.0f, -1.0f, -1.0f, 0.0f),\n    float4( 1.0f,  1.0f,  0.0f, 0.0f),\n    float4(-1.0f,  1.0f,  0.0f, 0.0f),\n    float4( 0.0f, -1.0f,  1.0f, 0.0f),\n    float4( 0.0f, -1.0f, -1.0f, 0.0f)\n  \};\n\n  const int hashMask = 255;\n  const int gradientsMask3D = 15;\n\n  point *= frequency;\n  int ix0 = floor(point.x);\n  int iy0 = floor(point.y);\n  int iz0 = floor(point.z);\n  float tx0 = point.x - ix0;\n  float ty0 = point.y - iy0;\n  float tz0 = point.z - iz0;\n  float tx1 = tx0 - 1.0f;\n  float ty1 = ty0 - 1.0f;\n  float tz1 = tz0 - 1.0f;\n  ix0 &= hashMask;\n  iy0 &= hashMask;\n  iz0 &= hashMask;\n  int ix1 = ix0 + 1;\n  int iy1 = iy0 + 1;\n  int iz1 = iz0 + 1;\n\n  int h0 = hash\[ ix0 ];\n  int h1 = hash\[ ix1 ];\n  int h00 = hash\[ h0 + iy0 ];\n  int h10 = hash\[ h1 + iy0 ];\n  int h01 = hash\[ h0 + iy1 ];\n  int h11 = hash\[ h1 + iy1 ];\n\n  // float3 fails for some unknown reason. Add an empty fourth\n  float4 g000 = gradients3D\[ hash\[ h00 + iz0 ] & gradientsMask3D ];\n  float4 g100 = gradients3D\[ hash\[ h10 + iz0 ] & gradientsMask3D ];\n  float4 g010 = gradients3D\[ hash\[ h01 + iz0 ] & gradientsMask3D ];\n  float4 g110 = gradients3D\[ hash\[ h11 + iz0 ] & gradientsMask3D ];\n  float4 g001 = gradients3D\[ hash\[ h00 + iz1 ] & gradientsMask3D ];\n  float4 g101 = gradients3D\[ hash\[ h10 + iz1 ] & gradientsMask3D ];\n  float4 g011 = gradients3D\[ hash\[ h01 + iz1 ] & gradientsMask3D ];\n  float4 g111 = gradients3D\[ hash\[ h11 + iz1 ] & gradientsMask3D ];\n\n  float v000 = dot(g000, float4(tx0, ty0, tz0, 0.0f));\n  float v100 = dot(g100, float4(tx1, ty0, tz0, 0.0f));\n  float v010 = dot(g010, float4(tx0, ty1, tz0, 0.0f));\n  float v110 = dot(g110, float4(tx1, ty1, tz0, 0.0f));\n  float v001 = dot(g001, float4(tx0, ty0, tz1, 0.0f));\n  float v101 = dot(g101, float4(tx1, ty0, tz1, 0.0f));\n  float v011 = dot(g011, float4(tx0, ty1, tz1, 0.0f));\n  float v111 = dot(g111, float4(tx1, ty1, tz1, 0.0f));\n\n  float tx = Smooth(tx0);\n  float ty = Smooth(ty0);\n  float tz = Smooth(tz0);\n  return Lerp(\n    Lerp(Lerp(v000, v100, tx), Lerp(v010, v110, tx), ty),\n    Lerp(Lerp(v001, v101, tx), Lerp(v011, v111, tx), ty),\n    tz);// * 0.5f + 0.5f;\n\}\n\n\nstatic float Fractal(float3 point, float frequency, int octaves, float lacunarity, float persistence)\n\{\n  \n  float sum = 0;\n  sum = Perlin3D(point, frequency);\n  float amplitude = 1.0f;\n  float range = 1.0f;\n  for (int o = 1; o < octaves; o++) \{\n    frequency *= lacunarity;\n    amplitude *= persistence;\n    range += amplitude;\n    sum += Perlin3D(point, frequency) * amplitude;\n  \}\n  return sum / range;\n\}\n\n\nkernel VFNoise : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead> voxels;\n  Image<eWrite> dst;\n\n  param:\n    int seed;\n    float size;\n    int octaves;\n    float lacunarity;\n    float persistence;\n    float4x4 M;\n\n  local:\n    float3 seed_offset;\n    float frequency;\n    float4x4 M_inv;\n\n  void define()\n  \{\n    defineParam(size, \"Size\", 30.0f);\n    defineParam(octaves, \"Octaves\", 4);\n    defineParam(lacunarity, \"Lacunarity\", 2.0f);\n    defineParam(persistence, \"Persistence\", 0.5f);\n  \}\n\n  void init()\n  \{\n    int random = seed;\n    for (int c = 0; c < 3; c++)\n    \{\n      random = lcgRandom(random);\n      seed_offset\[c] = (random / float(rand_modulus)) * 10000;\n    \}\n    frequency = 1.0f / size;\n    M_inv = M.invert();\n  \}\n\n\n  float3 multVectMatrix(float4 vec, float4x4 M)\n  \{\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n\n  void process()\n  \{\n    float4 voxel = voxels();\n    float3 point = multVectMatrix(voxel, M_inv);\n    voxel.w = Fractal(point + seed_offset, frequency, octaves, lacunarity, persistence);\n    dst() = voxel;\n  \}\n    \n\};"
-  rebuild ""
-  VFNoise_seed {{parent.seed}}
-  VFNoise_Size {{parent.size}}
-  VFNoise_Octaves {{parent.octaves}}
-  VFNoise_Lacunarity {{parent.lacunarity}}
-  VFNoise_Persistence {{parent.persistence}}
-  group_VFNoise_M 1
-  VFNoise_M {
-      {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
-      {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
-      {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
-      {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
-    }
-  name BlinkScript_noise
-  selected true
-  xpos 519
-  ypos -80
- }
- Add {
-  channels alpha
-  value {{parent.offset}}
-  name OFFSET
-  xpos 519
-  ypos -22
- }
- Multiply {
-  channels alpha
-  value {{parent.density}}
-  name DENSITY
-  xpos 519
-  ypos 16
- }
- Dot {
-  name Dot3
-  note_font_size 20
-  xpos 553
-  ypos 82
- }
-push $N356a3c00
- Dot {
-  name Dot2
-  note_font_size 20
-  xpos 680
-  ypos -231
- }
- ChannelMerge {
-  inputs 2
-  operation plus
-  name ChannelMerge1
-  xpos 646
-  ypos 65
- }
- Output {
-  name Output
-  xpos 646
-  ypos 145
- }
-end_group
-Group {
- inputs 0
- name V_Erode
- tile_color 0xc17939ff
- xpos -260
- ypos -130
- addUserKnob {20 VoxelErode}
- addUserKnob {7 size l Size R -5 5}
- addUserKnob {41 mix T Copy1.mix}
- addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript_erode.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript_erode.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_erode.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_erode.maxTileLines}
-}
- Input {
-  inputs 0
-  name Input
-  xpos 77
-  ypos -218
- }
- Dot {
-  name Dot1
-  note_font_size 20
-  xpos 111
-  ypos -183
- }
-set N34589c00 [stack 0]
- Shuffle {
-  in2 voxels
-  red red2
-  green green2
-  blue blue2
-  name Shuffle1
-  label "<font size = \"5\"> \[value in]"
-  xpos 77
-  ypos -146
-  postage_stamp true
- }
- BlinkScript {
-  kernelSourceFile bin/transform/erode.cpp
-  KernelDescription "1 \"VErode\" iterate pixelWise 2fe7d082f174f3fa5da2d0397253182277f21748b6bd04eb245b16ad49d83abf 2 \"voxels\" Read Random \"dst\" Write Point 4 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"size\" Float 1 AAAAAA=="
-  kernelSource "kernel VErode : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    float size;\n\n  local:\n    float3 VoxelSizeInv;\n    bool negative;\n    int grid_width;\n    int range;\n    float max_length;\n\n  void init()\n  \{\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n    negative = size < 0;\n    grid_width = voxels.bounds.width();\n    range = negative ? floor(size) : ceil(size);\n    max_length = size * size;\n  \}\n\n  float voxelValue(int3 voxel)\n  \{\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y)\[3]; // Just alpha (density)\n  \}\n\n  void process(int2 pos)\n  \{\n    float4 current = voxels(pos.x, pos.y);\n    int3 voxel;\n    for (int c = 0; c < 3; c++)\n      voxel\[c] = int((current\[c] - bbox_min\[c]) * VoxelSizeInv\[c]);\n\n    float length, new_val = voxelValue(voxel);\n    if (negative)\n    \{\n      // Minimum value within specified range\n      for (int i = max(voxel.x + range, 0); i <= min(voxel.x - range, resolution.x - 1); i++)\n        for (int j = max(voxel.y + range, 0); j <= min(voxel.y - range, resolution.y - 1); j++)\n          for (int k = max(voxel.z + range, 0); k <= min(voxel.z - range, resolution.z - 1); k++)\n          \{\n            length = pow(i - voxel.x, 2) + pow(j - voxel.y, 2) + pow(k - voxel.z, 2);\n            new_val = min(new_val, voxelValue(int3(i, j, k)) + 10000.0f * (length > max_length));\n          \}\n    \}\n    else\n    \{\n      // Maximum value within specified range\n      for (int i = max(voxel.x - range, 0); i <= min(voxel.x + range, resolution.x - 1); i++)\n        for (int j = max(voxel.y - range, 0); j <= min(voxel.y + range, resolution.y - 1); j++)\n          for (int k = max(voxel.z - range, 0); k <= min(voxel.z + range, resolution.z - 1); k++)\n          \{\n            length = pow(i - voxel.x, 2) + pow(j - voxel.y, 2) + pow(k - voxel.z, 2);\n            new_val = max(new_val, voxelValue(int3(i, j, k)) - 10000.0f * (length > max_length));\n          \}\n    \}\n\n    dst() = current;\n    dst(3) = new_val;\n  \}\n\};"
-  rebuild ""
-  VErode_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
-  VErode_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
-  VErode_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
-  VErode_size {{parent.size}}
-  name BlinkScript_erode
-  xpos 77
-  ypos -38
- }
- Dot {
-  name Dot2
-  note_font_size 20
-  xpos 111
-  ypos 28
- }
-push $N34589c00
- Dot {
-  name Dot3
-  note_font_size 20
-  xpos 213
-  ypos -183
- }
- Copy {
-  inputs 2
-  from0 rgba.alpha
-  to0 rgba.alpha
-  name Copy1
-  xpos 179
-  ypos 18
- }
- Output {
-  name Output
-  xpos 179
-  ypos 87
- }
-end_group
-Group {
- inputs 0
- name V_Average
- knobChanged "\nif nuke.thisKnob().name() == \"weight_channels\":\n    knob = nuke.thisNode().knob(\"weight\")\n    value = nuke.thisKnob().getValue()\n    if value < 3:\n        knob.setFlag(0x00040000)\n    else:\n        knob.clearFlag(0x00040000)\n"
- tile_color 0xc17939ff
- xpos -150
- ypos -130
- addUserKnob {20 VAverage}
- addUserKnob {3 range l Range t "The radius of the area to blend.\nWill only average voxels with positive density."}
- addUserKnob {4 weight_channels l "         Channels" t "Channels to be blended together. Custom can be used to set individual weights per channel" M {rgb rgba alpha Custom ""}}
- addUserKnob {19 weight l Weight +HIDDEN}
- weight {0.5 0.5 0.5 0.5}
- addUserKnob {6 weight_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
- addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript_average.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript_average.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_average.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_average.maxTileLines}
-}
- Input {
-  inputs 0
-  name Input
-  xpos 255
-  ypos 53
- }
- Dot {
-  name Dot13
-  note_font_size 20
-  xpos 289
-  ypos 122
- }
-set N3339f000 [stack 0]
- Shuffle {
-  in voxels
-  in2 rgba
-  alpha alpha2
-  name Shuffle2
-  label "<font size = \"5\"> \[value in]"
-  xpos 426
-  ypos 82
-  postage_stamp true
- }
- Dot {
-  name Dot14
-  note_font_size 20
-  xpos 460
-  ypos 243
- }
-push $N3339f000
- BlinkScript {
-  inputs 2
-  kernelSourceFile bin/transform/average.cpp
-  KernelDescription "1 \"VAverage\" iterate pixelWise 2d8525d7ab50d97e24399e054560862c62cacd8c388d3e33f622e673acd378f6 3 \"colour\" Read Random \"voxels\" Read Random \"dst\" Write Point 5 \"weight\" Float 4 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"range\" Int 1 AAAAAA=="
-  kernelSource "kernel VAverage : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> colour;\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float4 weight;\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    int range;\n\n  local:\n    float4 _weight;\n    float3 VoxelSizeInv;\n    int grid_width;\n    float max_length;\n\n  void init()\n  \{\n    for (int c = 0; c < 3; c++)\n    \{\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n      _weight\[c] = clamp(weight\[c], 0.0f, 1.0f);\n    \}\n    _weight.w = clamp(weight.w, 0.0f, 1.0f);\n    grid_width = voxels.bounds.width();\n    max_length = range * range;\n  \}\n\n  float4 voxelValue(int3 voxel)\n  \{\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return colour(x, y);\n  \}\n\n  void process(int2 pos)\n  \{\n    float4 current = voxels(pos.x, pos.y);\n\n    int3 voxel;\n    for (int c = 0; c < 3; c++)\n      voxel\[c] = int((current\[c] - bbox_min\[c]) * VoxelSizeInv\[c]);\n\n    float4 value, result = 0;\n    int total = 0;\n    float length;\n\n    // Maximum value within specified range\n    for (int i = max(voxel.x - range, 0); i <= min(voxel.x + range, resolution.x - 1); i++)\n      for (int j = max(voxel.y - range, 0); j <= min(voxel.y + range, resolution.y - 1); j++)\n        for (int k = max(voxel.z - range, 0); k <= min(voxel.z + range, resolution.z - 1); k++)\n        \{\n          length = pow(i - voxel.x, 2) + pow(j - voxel.y, 2) + pow(k - voxel.z, 2);\n          value = voxelValue(int3(i, j, k)) * (length <= max_length);\n          total += (value.w > 0);\n          result += value * (value.w > 0);\n        \}\n    \n    current = voxelValue(voxel);\n    if (total < 1)\n      dst() = current;\n    else\n      for (int c = 0; c < 4; c++)\n        dst(c) = (result\[c] / total - current\[c]) * _weight\[c] + current\[c];\n  \}\n\};"
-  rebuild ""
-  VAverage_weight {{"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels == 0 ? 0 : (weight_channels == 1 || weight_channels == 2 ? 1 : weight)"}}
-  VAverage_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
-  VAverage_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
-  VAverage_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
-  VAverage_range {{parent.range}}
-  name BlinkScript_average
-  selected true
-  xpos 255
-  ypos 233
- }
- Output {
-  name Output
-  xpos 255
-  ypos 333
- }
-end_group
-Group {
- inputs 0
- name V_PtLight
- tile_color 0xc19139ff
- xpos -370
- ypos -57
- addUserKnob {20 VPtLight}
- addUserKnob {41 value l "Light Colour" T LIGHT_COL.value}
- addUserKnob {41 value_1 l "Scatter Colour" T SCATTER_COL.value}
- addUserKnob {7 intensity l Intensity}
- intensity 1
- addUserKnob {7 absorption l Absorption t "Amount of light absorbed by each voxel."}
- absorption 0.5
- addUserKnob {3 samples l Samples t "How many samples to take per pixel. higher values will give more accurate results at the cost of speed."}
- samples 64
- addUserKnob {26 ""}
- addUserKnob {41 operation T Merge.operation}
- addUserKnob {41 mix T Merge.mix}
- addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript_point.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript_point.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_point.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_point.maxTileLines}
-}
- Input {
-  inputs 0
-  name Inputlight
-  label 1
-  xpos 725
-  ypos -4
-  number 1
- }
- Input {
-  inputs 0
-  name Inputvoxels
-  label 0
-  xpos 603
-  ypos -4
- }
- Dot {
-  name Dot1
-  note_font_size 20
-  xpos 637
-  ypos 74
- }
-set N344e8800 [stack 0]
- Clamp {
-  channels alpha
-  maximum 1.#INF
-  name Clamp
-  xpos 603
-  ypos 116
- }
- Shuffle {
-  in2 voxels
-  red red2
-  green green2
-  blue blue2
-  name Shuffle1
-  label "<font size = \"5\"> \[value in]"
-  xpos 603
-  ypos 158
-  postage_stamp true
- }
- BlinkScript {
-  kernelSourceFile bin/light/point.cpp
-  KernelDescription "1 \"VPtLight\" iterate pixelWise ba9be73e015472e04940da642fd6d4b614fba9085b168cbbff6669efdee47694 2 \"voxels\" Read Random \"dst\" Write Point 8 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"light\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"intensity\" Float 1 AACAPw== \"absorption\" Float 1 AAAAPw== \"samples\" Int 1 MgAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-  kernelSource "kernel VPtLight : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    float3 light;\n    float intensity;\n    float absorption;\n    int samples;\n    float4x4 transform_M;\n\n  local:\n    float3 aabb\[2];\n    float3 VoxelSizeInv;\n    float3 _light;\n    int grid_width;\n    int _samples;\n\n  void define()\n  \{\n    defineParam(intensity, \"intensity\", 1.0f);\n    defineParam(absorption, \"absorption\", 0.5f);\n    defineParam(samples, \"samples\", 50);\n  \}\n\n  void init()\n  \{\n    aabb\[0] = bbox_min;\n    aabb\[1] = bbox_max;\n\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n\n    _light = multVectMatrix(light, transform_M.invert());\n\n    grid_width = voxels.bounds.width();\n    _samples = max(1, samples);\n  \}\n\n  float3 multVectMatrix(float3 vec, float4x4 M)\n  \{\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n  // Axis aligned bounding box intersection for GPU : Shortened for exit only\n  float intersection_exit_AABB(float3 origin, float3 inv_dir)\n  \{\n    //bool sign\[3] \{inv_dir.x < 0, inv_dir.y < 0, inv_dir.z < 0\};\n    float tmin, tmax, tymin, tymax, tzmin, tzmax;\n    bool sign = inv_dir.x < 0 ? 0 : 1;\n    tmax  = (aabb\[sign].x - origin.x) * inv_dir.x;\n    sign = inv_dir.y < 0 ? 0 : 1;\n    tymax = (aabb\[sign].y - origin.y) * inv_dir.y;\n    sign = inv_dir.z < 0 ? 0 : 1;\n    tzmax = (aabb\[sign].z - origin.z) * inv_dir.z;\n    tmax = min(min(tmax, tymax), tzmax);\n    return tmax;\n  \}\n\n  float voxelValue(int3 voxel)\n  \{\n    // Return Empty for values outside of grid\n    if (voxel.x < 0 || resolution.x <= voxel.x ||\n        voxel.y < 0 || resolution.y <= voxel.y ||\n        voxel.z < 0 || resolution.z <= voxel.z )\n      return 0;\n\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y)\[3]; // Just alpha (density)\n  \}\n\n  float Blend(float3 curpos)\n  \{\n    float3 weight, voxel_space;\n    int3 base_voxel, offset;\n    // Lower Bound of 8 adjacent voxels\n    for (int c = 0; c < 3; c++)\n    \{\n      voxel_space\[c] = curpos\[c] * VoxelSizeInv\[c];\n      base_voxel\[c] = int(floor(voxel_space\[c] - 0.5f));\n    \}\n\n    float result = 0;\n    for (int i = 0; i < 8; i++)\n    \{\n      // Weighted distance on each axis for each adjacent voxel\n      offset = int3(i / 4, (i / 2) % 2, i % 2);\n      weight.x = 1 - fabs(offset.x - (voxel_space.x - (base_voxel.x + 0.5f)));\n      weight.y = 1 - fabs(offset.y - (voxel_space.y - (base_voxel.y + 0.5f)));\n      weight.z = 1 - fabs(offset.z - (voxel_space.z - (base_voxel.z + 0.5f)));\n\n      result += voxelValue(base_voxel + offset) * weight.x * weight.y * weight.z;\n    \}\n\n    return result;\n  \}\n\n  void process(int2 pos)\n  \{\n    // Skip empty voxels\n    float4 v = voxels(pos.x, pos.y);\n    if (v.w <= 0)\n      return;\n\n    // Starting values\n    float3 voxel = float3(v.x, v.y, v.z); // Center of voxel\n    float3 dir = voxel - _light; // from light to voxel\n    float dist_to_light = length(dir);\n    dir /= dist_to_light;\n\n    // Fire ray towards light, get closest distance\n    float max_dist = min(dist_to_light, intersection_exit_AABB(voxel, -1.0f / dir));\n\n    // ========== Ray Marching ==========\n\n    // Maximum of 1000 samples per voxel\n    float deltaT, result = intensity, step = max(max_dist / _samples, 0.001f);\n    float3 curpos;\n\n    for (float dist = 0; dist <= max_dist; dist += step)\n    \{\n      curpos = voxel - dir * dist;\n      deltaT = exp(-absorption * Blend(curpos - bbox_min) * step);\n      result *= deltaT;\n\n      // End loop if Transmittance is near 0\n      if (result < 1e-6)\n      \tbreak;\n      //dist += (result < 1e-6) * max_dist;\n    \}\n\n    dst() = result;\n\n  \}\n\n\};"
-  rebuild ""
-  VPtLight_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
-  VPtLight_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
-  VPtLight_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
-  VPtLight_light {{input1.world_matrix.3} {input1.world_matrix.7} {input1.world_matrix.11}}
-  VPtLight_intensity {{parent.intensity}}
-  VPtLight_absorption {{parent.absorption}}
-  VPtLight_samples {{parent.samples}}
-  group_VPtLight_transform_M 1
-  VPtLight_transform_M {
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
-    }
-  name BlinkScript_point
-  selected true
-  xpos 603
-  ypos 278
- }
-set N3790b000 [stack 0]
- Dot {
-  name Dot9
-  note_font_size 20
-  xpos 527
-  ypos 288
- }
- Multiply {
-  value {{1/intensity}}
-  name Multiply2
-  xpos 493
-  ypos 330
- }
- Dot {
-  name Dot7
-  note_font_size 20
-  xpos 527
-  ypos 406
- }
-set N3454d400 [stack 0]
-push $N344e8800
- Dot {
-  name Dot3
-  note_font_size 20
-  xpos 307
-  ypos 74
- }
- Multiply {
-  channels rgb
-  value 0
-  name Multiply1
-  xpos 273
-  ypos 230
- }
- Dot {
-  name Dot5
-  note_font_size 20
-  xpos 307
-  ypos 288
- }
-set N3ad5c00 [stack 0]
- Add {
-  value {1 0.915 0.775 1}
-  value_panelDropped true
-  name LIGHT_COL
-  xpos 273
-  ypos 331
- }
- Copy {
-  inputs 2
-  from0 rgba.alpha
-  to0 rgba.alpha
-  name Copy2
-  xpos 273
-  ypos 396
- }
- Dot {
-  name Dot8
-  note_font_size 20
-  xpos 307
-  ypos 537
- }
-push $N3454d400
- Invert {
-  channels alpha
-  name Invert1
-  xpos 493
-  ypos 458
- }
-push $N3ad5c00
- Dot {
-  name Dot6
-  note_font_size 20
-  xpos 417
-  ypos 288
- }
- Add {
-  value {0.165 0.32 0.535 0}
-  value_panelDropped true
-  name SCATTER_COL
-  xpos 383
-  ypos 331
- }
- Copy {
-  inputs 2
-  from0 rgba.alpha
-  to0 rgba.alpha
-  name Copy1
-  xpos 383
-  ypos 458
- }
- Merge2 {
-  inputs 2
-  operation xor
-  name Merge1
-  xpos 383
-  ypos 533
- }
- Dot {
-  name Dot10
-  note_font_size 20
-  xpos 417
-  ypos 601
- }
-push $N3790b000
- Merge2 {
-  inputs 2
-  operation multiply
-  name Merge2
-  xpos 603
-  ypos 597
- }
- Dot {
-  name Dot2
-  note_font_size 20
-  xpos 637
-  ypos 738
- }
-push $N344e8800
- Dot {
-  name Dot4
-  note_font_size 20
-  xpos 759
-  ypos 74
- }
- Merge2 {
-  inputs 2
-  operation plus
-  Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
-  name Merge
-  xpos 725
-  ypos 734
- }
- Output {
-  name Output
-  xpos 725
-  ypos 793
- }
-end_group
-Group {
- inputs 0
- name V_EnvLight
- tile_color 0xc19139ff
- xpos -260
- ypos -57
- addUserKnob {20 VEnvLight}
- addUserKnob {6 luminance l "Luminance Based" t "Uses the luminance of the HDRI to light the image." +STARTLINE}
- addUserKnob {7 rotate l Rotate t "Rotates the spherical mapping" R 0 360}
- addUserKnob {7 intensity l Intensity}
- intensity 1
- addUserKnob {7 absorption l Absorption t "Amount of light absorbed by each voxel."}
- absorption 0.7
- addUserKnob {3 range l Range t "Radius of area to blend"}
- range 2
- addUserKnob {3 samples l Samples t "How many samples to take per voxel. Higher values will give more accurate results at the cost of speed."}
- samples 64
- addUserKnob {26 ""}
- addUserKnob {41 operation T Merge.operation}
- addUserKnob {41 mix T Merge.mix}
- addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript_environment.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript_environment.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_environment.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_environment.maxTileLines}
-}
- Input {
-  inputs 0
-  name Inputenv
-  label 0
-  xpos 1007
-  ypos -84
-  number 1
- }
- Input {
-  inputs 0
-  name Inputvoxels
-  label 0
-  xpos 1204
-  ypos -348
- }
- Dot {
-  name Dot1
-  note_font_size 20
-  xpos 1238
-  ypos -288
- }
-set N3566b000 [stack 0]
- Clamp {
-  channels alpha
-  maximum 1.#INF
-  name Clamp
-  xpos 1204
-  ypos -244
- }
- Shuffle {
-  in2 voxels
-  red red2
-  green green2
-  blue blue2
-  name Shuffle1
-  label "<font size = \"5\"> \[value in]"
-  xpos 1204
-  ypos -198
-  postage_stamp true
- }
- BlinkScript {
-  inputs 2
-  kernelSourceFile bin/light/environment.cpp
-  KernelDescription "1 \"VEnvLight\" iterate pixelWise c11143e3588aa0102d052d41d74a7f94f65593a51b5fcc80a5769d05a7c6ae54 3 \"voxels\" Read Random \"environment\" Read Random \"dst\" Write Point 9 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"luminance_on\" Bool 1 AA== \"rotate\" Float 1 AAAAAA== \"intensity\" Float 1 AACAPw== \"absorption\" Float 1 AAAAPw== \"samples\" Int 1 MgAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-  kernelSource "kernel VEnvLight : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> voxels;\n  Image<eRead, eAccessRandom> environment;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    bool luminance_on;\n    float rotate;\n    float intensity;\n    float absorption;\n    int samples;\n    float4x4 transform_M;\n\n  local:\n    float3 aabb\[2];\n    float3 VoxelSizeInv;\n    float _absorption;\n    int grid_width;\n    float rad2deg;\n    int _samples;\n\n  void define()\n  \{\n    defineParam(intensity, \"intensity\", 1.0f);\n    defineParam(absorption, \"absorption\", 0.5f);                   // Absorption? Rate of Decay\n    defineParam(samples, \"samples\", 50);\n  \}\n\n  void init()\n  \{\n    aabb\[0] = bbox_min;\n    aabb\[1] = bbox_max;\n    grid_width = voxels.bounds.width();\n\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n\n    _absorption = 1 / (1 - absorption);\n    rad2deg = 180.0f / PI;\n    _samples = max(1, samples);\n  \}\n\n  float3 multVectMatrix(float3 vec, float4x4 M)\n  \{\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n  // Axis aligned bounding box intersection for GPU : Shortened for exit only\n  float intersection_exit_AABB(float3 origin, float3 inv_dir, float3 bbox\[2])\n  \{\n    //bool sign\[3] \{inv_dir.x < 0, inv_dir.y < 0, inv_dir.z < 0\};\n    float tmin, tmax, tymin, tymax, tzmin, tzmax;\n    bool sign = inv_dir.x < 0 ? 0 : 1;\n    tmax  = (aabb\[sign].x - origin.x) * inv_dir.x;\n    sign = inv_dir.y < 0 ? 0 : 1;\n    tymax = (aabb\[sign].y - origin.y) * inv_dir.y;\n    sign = inv_dir.z < 0 ? 0 : 1;\n    tzmax = (aabb\[sign].z - origin.z) * inv_dir.z;\n    tmax = min(min(tmax, tymax), tzmax);\n    return tmax;\n  \}\n\n  float voxelValue(int3 voxel)\n  \{\n    // Return Empty for values outside of grid\n    if (voxel.x < 0 || resolution.x <= voxel.x ||\n        voxel.y < 0 || resolution.y <= voxel.y ||\n        voxel.z < 0 || resolution.z <= voxel.z )\n      return 0;\n\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y)\[3]; // Just alpha (density)\n  \}\n\n  float Blend(float3 curpos)\n  \{\n    float3 weight, voxel_space;\n    int3 base_voxel, offset;\n    // Lower Bound of 8 adjacent voxels\n    for (int c = 0; c < 3; c++)\n    \{\n      voxel_space\[c] = curpos\[c] * VoxelSizeInv\[c];\n      base_voxel\[c] = int(floor(voxel_space\[c] - 0.5f));\n    \}\n\n    float result = 0;\n    for (int i = 0; i < 8; i++)\n    \{\n      // Weighted distance on each axis for each adjacent voxel\n      offset = int3(i / 4, (i / 2) % 2, i % 2);\n      weight.x = 1 - fabs(offset.x - (voxel_space.x - (base_voxel.x + 0.5f)));\n      weight.y = 1 - fabs(offset.y - (voxel_space.y - (base_voxel.y + 0.5f)));\n      weight.z = 1 - fabs(offset.z - (voxel_space.z - (base_voxel.z + 0.5f)));\n\n      result += voxelValue(base_voxel + offset) * weight.x * weight.y * weight.z;\n    \}\n\n    return result;\n  \}\n\n  void process(int2 pos)\n  \{\n    // Skip empty voxels\n    float4 v = voxels(pos.x, pos.y);\n    if (v.w <= 0)\n      return;\n\n\n    // ========== AMBIENT LIGHT ==========\n\n    // Fire a ray from outer sphere to voxel, accumulate fog\n\n    // Starting values\n    float3 voxel = float3(v.x, v.y, v.z); // Center of voxel\n\n    int3 voxel_i;\n    for (int c = 0; c < 3; c++)\n      voxel_i\[c] = (voxel\[c] - bbox_min\[c]) * VoxelSizeInv\[c];\n\n    float3 normal = float3(\n      voxelValue(voxel_i - int3(1,0,0)) - voxelValue(voxel_i + int3(1,0,0)),\n      voxelValue(voxel_i - int3(0,1,0)) - voxelValue(voxel_i + int3(0,1,0)),\n      voxelValue(voxel_i - int3(0,0,1)) - voxelValue(voxel_i + int3(0,0,1))\n      );\n\n    float3 dir = -normalize(normal);\n    // Skip directionless voxels\n    if (dir.x == 0 && dir.y == 0 && dir.z == 0) return;\n\n    float3 dir_inv = 1.0f / dir;\n\n    // Convert direction to latlong coordinates\n    float3 env_dir = normalize(multVectMatrix(dir, transform_M));\n    float x = (fmod((rad2deg * atan2(env_dir.z, env_dir.x) + rotate), 360.0f) / 360.0f + 0.5f) * environment.bounds.width();\n    float y = ((rad2deg * acos(env_dir.y)) / 180.0f) * environment.bounds.height();\n\n    float4 colour = environment(x, y);\n    float luminance = (colour.x * 0.3f + colour.y * 0.59f + colour.z * 0.11f) * intensity;\n\n    // Move starting point to whatever's closest: intersection / light\n    float max_dist = intersection_exit_AABB(voxel, -dir_inv, aabb);\n\n    // ========== Ray Marching ==========\n\n    // Maximum of 1000 samples per voxel\n    float result = luminance * luminance_on + intensity * (1 - luminance_on);\n    float deltaT = 1, step = max(max_dist / _samples, 0.001f);\n    float3 curpos;\n\n    for (float dist = 0; dist <= max_dist; dist += step)\n    \{\n      curpos = voxel - dir * dist;\n      deltaT = exp(-absorption * Blend(curpos - bbox_min) * step);\n      result *= deltaT;\n\n      // End loop if Transmittance is near 0\n      if (result < 1e-6)\n        break;\n      //dist += (result < 1e-6) * max_dist;\n    \}\n\n    dst() = result * environment(x, y);\n    dst(3) = v.w;\n    \n  \}\n\n\};"
-  rebuild ""
-  VEnvLight_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
-  VEnvLight_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
-  VEnvLight_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
-  VEnvLight_luminance_on {{parent.luminance}}
-  VEnvLight_rotate {{parent.rotate}}
-  VEnvLight_intensity {{intensity}}
-  VEnvLight_absorption {{absorption}}
-  VEnvLight_samples {{samples}}
-  VEnvLight_transform_M {
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
-    }
-  name BlinkScript_environment
-  selected true
-  xpos 1204
-  ypos -84
- }
- Crop {
-  box {0 0 {width} {height}}
-  reformat true
-  crop false
-  name Crop
-  xpos 1204
-  ypos -46
- }
- Group {
-  name V_Average1
-  knobChanged "\nif nuke.thisKnob().name() == \"weight_channels\":\n    knob = nuke.thisNode().knob(\"weight\")\n    value = nuke.thisKnob().getValue()\n    if value < 3:\n        knob.setFlag(0x00040000)\n    else:\n        knob.clearFlag(0x00040000)\n"
-  tile_color 0xc17a39ff
-  xpos 1204
-  ypos -20
-  addUserKnob {20 vaverage l "Voxel Average"}
-  addUserKnob {3 range l Range t "The radius of the area to blend.\nWill only average voxels with positive density."}
-  range {{parent.range}}
-  addUserKnob {4 weight_channels l "         Channels" t "Channels to be blended together. Custom can be used to set individual weights per channel" M {rgb rgba alpha custom "" "" "" ""}}
-  addUserKnob {19 weight l Weight t "Individual weights (0 to 1) to blend per channel" +HIDDEN}
-  weight {0.5 0.5 0.5 0}
-  addUserKnob {6 weight_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
- }
-  Input {
-   inputs 0
-   name Input
-   xpos 362
-   ypos -626
-  }
-  Dot {
-   name Dot13
-   note_font_size 20
-   xpos 396
-   ypos -557
-  }
-set N35677800 [stack 0]
-  Shuffle {
-   in voxels
-   in2 rgba
-   alpha alpha2
-   name Shuffle2
-   label "<font size = \"5\"> \[value in]"
-   xpos 533
-   ypos -597
-   postage_stamp true
-  }
-  Dot {
-   name Dot14
-   note_font_size 20
-   xpos 567
-   ypos -436
-  }
-push $N35677800
-  BlinkScript {
-   inputs 2
-   kernelSourceFile C:/Users/mshaw/Documents/Tests/Blink/Cloud_Gen_03/Scripts/WORKING/VoxelAverage_transform_002.cpp
-   ProgramGroup 1
-   KernelDescription "1 \"VoxelAverage\" iterate pixelWise 6c113d5dedc64ba6e56941b86052ff305117ae1399471bb6912c3cbe74066441 3 \"colour\" Read Random \"voxels\" Read Random \"dst\" Write Point 5 \"weight\" Float 4 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"range\" Int 1 AAAAAA=="
-   kernelSource "kernel VoxelAverage : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> colour;\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float4 weight;\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    int range;\n\n  local:\n    float4 _weight;\n    float3 VoxelSizeInv;\n    int grid_width;\n    float max_length;\n\n  void init()\n  \{\n    for (int c = 0; c < 3; c++)\n    \{\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n      _weight\[c] = clamp(weight\[c], 0.0f, 1.0f);\n    \}\n    _weight.w = clamp(weight.w, 0.0f, 1.0f);\n    grid_width = voxels.bounds.width();\n  \}\n\n  float4 voxelValue(int3 voxel)\n  \{\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return colour(x, y);\n  \}\n\n  void process(int2 pos)\n  \{\n    float4 current = voxels(pos.x, pos.y);\n\n    int3 voxel;\n    for (int c = 0; c < 3; c++)\n      voxel\[c] = int((current\[c] - bbox_min\[c]) * VoxelSizeInv\[c]);\n\n    float4 value, result = 0;\n    int total = 0;\n\n    // Maximum value within specified range\n    for (int i = max(voxel.x - range, 0); i <= min(voxel.x + range, resolution.x - 1); i++)\n      for (int j = max(voxel.y - range, 0); j <= min(voxel.y + range, resolution.y - 1); j++)\n        for (int k = max(voxel.z - range, 0); k <= min(voxel.z + range, resolution.z - 1); k++)\n        \{\n          value = voxelValue(int3(i, j, k));\n          total += (value.w > 0);\n          result += value * (value.w > 0);\n        \}\n    \n    current = voxelValue(voxel);\n    if (total < 1)\n      dst() = current;\n    else\n      for (int c = 0; c < 4; c++)\n        dst(c) = (result\[c] / total - current\[c]) * _weight\[c] + current\[c];\n  \}\n\};"
-   rebuild ""
-   VoxelAverage_weight {{"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels == 0 ? 0 : (weight_channels == 1 || weight_channels == 2 ? 1 : weight)"}}
-   VoxelAverage_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
-   VoxelAverage_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
-   VoxelAverage_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
-   VoxelAverage_range {{parent.range}}
-   name BlinkScript3
-   selected true
-   xpos 362
-   ypos -446
-  }
-  Output {
-   name Output1
-   xpos 362
-   ypos -346
-  }
- end_group
- Dot {
-  name Dot3
-  note_font_size 20
-  xpos 1238
-  ypos 51
- }
-push $N3566b000
- Dot {
-  name Dot2
-  note_font_size 20
-  xpos 1354
-  ypos -288
- }
- Merge2 {
-  inputs 2
-  operation plus
-  Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
-  name Merge
-  xpos 1320
-  ypos 47
- }
- Output {
-  name Output
-  xpos 1320
-  ypos 108
- }
-end_group
-Group {
- inputs 0
- name V_DirLight
- tile_color 0xc19139ff
- xpos -150
- ypos -57
- addUserKnob {20 VDirLight}
- addUserKnob {41 value l "Light Colour" T LIGHT_COL.value}
- addUserKnob {41 value_1 l "Scatter Colour" T SCATTER_COL.value}
- addUserKnob {7 intensity l Intensity}
- intensity 1
- addUserKnob {7 absorption l Absorption t "Amount of light absorbed by each voxel."}
- absorption 0.5
- addUserKnob {3 samples l Samples t "How many samples to take per pixel. higher values will give more accurate results at the cost of speed."}
- samples 64
- addUserKnob {26 ""}
- addUserKnob {41 operation T Merge.operation}
- addUserKnob {41 mix T Merge.mix}
- addUserKnob {20 graphics l GPU}
- addUserKnob {41 "Local GPU: " T BlinkScript_directional.gpuName}
- addUserKnob {41 "Use GPU if Available" T BlinkScript_directional.useGPUIfAvailable}
- addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_directional.maxGPUMemory}
- addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_directional.maxTileLines}
-}
- Input {
-  inputs 0
-  name Inputlight
-  label 1
-  xpos 570
-  ypos 176
-  number 1
- }
- Input {
-  inputs 0
-  name Inputvoxels
-  label 0
-  xpos 448
-  ypos 176
- }
- Dot {
-  name Dot1
-  note_font_size 20
-  xpos 482
-  ypos 254
- }
-set N35670c00 [stack 0]
- Clamp {
-  channels alpha
-  maximum 1.#INF
-  name Clamp
-  xpos 448
-  ypos 282
- }
- Shuffle {
-  in2 voxels
-  red red2
-  green green2
-  blue blue2
-  name Shuffle1
-  label "<font size = \"5\"> \[value in]"
-  xpos 448
-  ypos 324
-  postage_stamp true
- }
- BlinkScript {
-  kernelSourceFile bin/light/directional.cpp
-  KernelDescription "1 \"VDirLight\" iterate pixelWise d75d006f4732af7c2f465d8d0e9ee7125e9b1fc7451f4e2291592dbfcbbb3229 2 \"voxels\" Read Random \"dst\" Write Point 8 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"dir\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"intensity\" Float 1 AACAPw== \"absorption\" Float 1 AAAAPw== \"samples\" Int 1 MgAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
-  kernelSource "kernel VDirLight : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    float3 dir;\n    float intensity;\n    float absorption;\n    int samples;\n    float4x4 transform_M;\n\n  local:\n    float3 aabb\[2];\n    float3 VoxelSizeInv;\n    float3 _dir;\n    float3 dir_inv;\n    int grid_width;\n    int _samples;\n\n  void define()\n  \{\n    defineParam(intensity, \"intensity\", 1.0f);\n    defineParam(absorption, \"absorption\", 0.5f);\n    defineParam(samples, \"samples\", 50);\n  \}\n\n  void init()\n  \{\n    aabb\[0] = bbox_min;\n    aabb\[1] = bbox_max;\n\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n\n    _dir = multVectMatrix(dir, transform_M.invert());\n    dir_inv = 1.0f / _dir;\n\n    grid_width = voxels.bounds.width();\n    _samples = max(1, samples);\n  \}\n\n  float3 multVectMatrix(float3 vec, float4x4 M)\n  \{\n  \t// Rotation only\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2], // + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2], // + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2]  // + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n  // Axis aligned bounding box intersection for GPU : Shortened for exit only\n  float intersection_exit_AABB(float3 origin, float3 inv_dir)\n  \{\n    //bool sign\[3] \{inv_dir.x < 0, inv_dir.y < 0, inv_dir.z < 0\};\n    float tmin, tmax, tymin, tymax, tzmin, tzmax;\n    bool sign = inv_dir.x < 0 ? 0 : 1;\n    tmax  = (aabb\[sign].x - origin.x) * inv_dir.x;\n    sign = inv_dir.y < 0 ? 0 : 1;\n    tymax = (aabb\[sign].y - origin.y) * inv_dir.y;\n    sign = inv_dir.z < 0 ? 0 : 1;\n    tzmax = (aabb\[sign].z - origin.z) * inv_dir.z;\n    tmax = min(min(tmax, tymax), tzmax);\n    return tmax;\n  \}\n\n  float voxelValue(int3 voxel)\n  \{\n    // Return Empty for values outside of grid\n    if (voxel.x < 0 || resolution.x <= voxel.x ||\n        voxel.y < 0 || resolution.y <= voxel.y ||\n        voxel.z < 0 || resolution.z <= voxel.z )\n      return 0;\n\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y)\[3]; // Just alpha (density)\n  \}\n\n  float Blend(float3 curpos)\n  \{\n    float3 weight, voxel_space;\n    int3 base_voxel, offset;\n    // Lower Bound of 8 adjacent voxels\n    for (int c = 0; c < 3; c++)\n    \{\n      voxel_space\[c] = curpos\[c] * VoxelSizeInv\[c];\n      base_voxel\[c] = int(floor(voxel_space\[c] - 0.5f));\n    \}\n\n    float result = 0;\n    for (int i = 0; i < 8; i++)\n    \{\n      // Weighted distance on each axis for each adjacent voxel\n      offset = int3(i / 4, (i / 2) % 2, i % 2);\n      weight.x = 1 - fabs(offset.x - (voxel_space.x - (base_voxel.x + 0.5f)));\n      weight.y = 1 - fabs(offset.y - (voxel_space.y - (base_voxel.y + 0.5f)));\n      weight.z = 1 - fabs(offset.z - (voxel_space.z - (base_voxel.z + 0.5f)));\n\n      result += voxelValue(base_voxel + offset) * weight.x * weight.y * weight.z;\n    \}\n\n    return result;\n  \}\n\n  void process(int2 pos)\n  \{\n    // Skip empty voxels\n    float4 v = voxels(pos.x, pos.y);\n    if (v.w <= 0)\n      return;\n\n    // Starting values\n    float3 voxel = float3(v.x, v.y, v.z); // Center of voxel\n\n    // Fire ray towards light, get closest distance\n    float max_dist = intersection_exit_AABB(voxel, dir_inv);\n\n    // ========== Ray Marching ==========\n\n    // Maximum of 1000 samples per voxel\n    float deltaT, result = intensity, step = max(max_dist / _samples, 0.001f);\n    float3 curpos;\n\n    for (float dist = 0; dist <= max_dist; dist += step)\n    \{\n      curpos = voxel - dir * dist;\n      deltaT = exp(-absorption * Blend(curpos - bbox_min) * step);\n      result *= deltaT;\n\n      // End loop if Transmittance is near 0\n      if (result < 1e-6)\n      \tbreak;\n    \}\n\n    dst() = result;\n\n  \}\n\n\};"
-  rebuild ""
-  VDirLight_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
-  VDirLight_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
-  VDirLight_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
-  VDirLight_dir {{-input1.world_matrix.2} {-input1.world_matrix.6} {-input1.world_matrix.10}}
-  VDirLight_intensity {{parent.intensity}}
-  VDirLight_absorption {{parent.absorption}}
-  VDirLight_samples {{parent.samples}}
-  group_VDirLight_transform_M 1
-  VDirLight_transform_M {
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
-      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
-    }
-  name BlinkScript_directional
-  selected true
-  xpos 448
-  ypos 422
- }
- Dot {
-  name Dot11
-  xpos 482
-  ypos 468
- }
-set N3567bc00 [stack 0]
- Dot {
-  name Dot9
-  note_font_size 20
-  xpos 372
-  ypos 468
- }
- Multiply {
-  value {{1/intensity}}
-  name Multiply2
-  xpos 338
-  ypos 510
- }
- Dot {
-  name Dot7
-  note_font_size 20
-  xpos 372
-  ypos 586
- }
-set N3567b000 [stack 0]
-push $N35670c00
- Dot {
-  name Dot3
-  note_font_size 20
-  xpos 152
-  ypos 254
- }
- Multiply {
-  channels rgb
-  value 0
-  name Multiply1
-  xpos 118
-  ypos 410
- }
- Dot {
-  name Dot5
-  note_font_size 20
-  xpos 152
-  ypos 468
- }
-set N35717c00 [stack 0]
- Add {
-  value {1 0.915 0.775 1}
-  value_panelDropped true
-  name LIGHT_COL
-  xpos 118
-  ypos 511
- }
- Copy {
-  inputs 2
-  from0 rgba.alpha
-  to0 rgba.alpha
-  name Copy2
-  xpos 118
-  ypos 576
- }
- Dot {
-  name Dot8
-  note_font_size 20
-  xpos 152
-  ypos 717
- }
-push $N3567b000
- Invert {
-  channels alpha
-  name Invert1
-  xpos 338
-  ypos 638
- }
-push $N35717c00
- Dot {
-  name Dot6
-  note_font_size 20
-  xpos 262
-  ypos 468
- }
- Add {
-  value {0.165 0.32 0.535 0}
-  value_panelDropped true
-  name SCATTER_COL
-  xpos 228
-  ypos 511
- }
- Copy {
-  inputs 2
-  from0 rgba.alpha
-  to0 rgba.alpha
-  name Copy1
-  xpos 228
-  ypos 638
- }
- Merge2 {
-  inputs 2
-  operation xor
-  name Merge1
-  xpos 228
-  ypos 713
- }
- Dot {
-  name Dot10
-  note_font_size 20
-  xpos 262
-  ypos 781
- }
-push $N3567bc00
- Merge2 {
-  inputs 2
-  operation multiply
-  name Merge2
-  xpos 448
-  ypos 777
- }
- Dot {
-  name Dot2
-  note_font_size 20
-  xpos 482
-  ypos 918
- }
-push $N35670c00
- Dot {
-  name Dot4
-  note_font_size 20
-  xpos 604
-  ypos 254
- }
- Merge2 {
-  inputs 2
-  operation plus
-  Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
-  name Merge
-  xpos 570
-  ypos 914
- }
- Output {
-  name Output
-  xpos 570
-  ypos 973
  }
 end_group
 Group {
@@ -1369,7 +323,7 @@ Group {
   xpos 280
   ypos -250
  }
-set N3ac3000 [stack 0]
+set N89d3660 [stack 0]
  Dot {
   name Dot3
   note_font_size 20
@@ -1390,7 +344,7 @@ set N3ac3000 [stack 0]
   xpos 400
   ypos -71
  }
-set N378db000 [stack 0]
+set N89ed760 [stack 0]
  BlinkScript {
   kernelSourceFile bin/transform/transform.cpp
   KernelDescription "1 \"VTransform\" iterate pixelWise 5b690b92e4ac81d8c4109362853108ee2d03e941660f97309bcdff56941ad2cd 2 \"voxels\" Read Point \"dst\" Write Point 1 \"M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
@@ -1403,6 +357,7 @@ set N378db000 [stack 0]
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
+  rebuild_finalise ""
   name BlinkScript_transform
   selected true
   xpos 366
@@ -1414,9 +369,9 @@ set N378db000 [stack 0]
   xpos 400
   ypos 64
  }
-push $N378db000
-push $N3ac3000
-push $N3ac3000
+push $N89ed760
+push $N89d3660
+push $N89d3660
  Dot {
   name Dot2
   note_font_size 20
@@ -1518,7 +473,7 @@ Group {
   ypos -127
  }
  Clamp {
-  maximum 1.#INF
+  maximum inf
   name Clamp1
   xpos 535
   ypos -33
@@ -1551,6 +506,7 @@ Group {
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
       {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
     }
+  rebuild_finalise ""
   name BlinkScript_render
   xpos 535
   ypos 84
@@ -1559,6 +515,782 @@ Group {
   name Output
   xpos 535
   ypos 222
+ }
+end_group
+Group {
+ inputs 0
+ name V_DirLight
+ tile_color 0xc19139ff
+ xpos -150
+ ypos -57
+ addUserKnob {20 VDirLight}
+ addUserKnob {41 value l "Light Colour" T LIGHT_COL.value}
+ addUserKnob {41 value_1 l "Scatter Colour" T SCATTER_COL.value}
+ addUserKnob {7 intensity l Intensity}
+ intensity 1
+ addUserKnob {7 absorption l Absorption t "Amount of light absorbed by each voxel."}
+ absorption 0.5
+ addUserKnob {3 samples l Samples t "How many samples to take per pixel. higher values will give more accurate results at the cost of speed."}
+ samples 64
+ addUserKnob {26 ""}
+ addUserKnob {41 operation T Merge.operation}
+ addUserKnob {41 mix T Merge.mix}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript_directional.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_directional.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_directional.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_directional.maxTileLines}
+}
+ Input {
+  inputs 0
+  name Inputlight
+  label 1
+  xpos 570
+  ypos 176
+  number 1
+ }
+ Input {
+  inputs 0
+  name Inputvoxels
+  label 0
+  xpos 448
+  ypos 176
+ }
+ Dot {
+  name Dot1
+  note_font_size 20
+  xpos 482
+  ypos 254
+ }
+set N88c0430 [stack 0]
+ Clamp {
+  channels alpha
+  maximum inf
+  name Clamp
+  xpos 448
+  ypos 282
+ }
+ Shuffle {
+  in2 voxels
+  red red2
+  green green2
+  blue blue2
+  name Shuffle1
+  label "<font size = \"5\"> \[value in]"
+  xpos 448
+  ypos 324
+  postage_stamp true
+ }
+ BlinkScript {
+  kernelSourceFile bin/light/directional.cpp
+  recompileCount 1
+  ProgramGroup 1
+  KernelDescription "2 \"VDirLight\" iterate pixelWise 04fbd2723bd24d064d8f5d29549e3cfdfb7af01c4af352f72bfe4247bdc5004c 2 \"voxels\" Read Random \"dst\" Write Point 8 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"dir\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"intensity\" Float 1 AACAPw== \"absorption\" Float 1 AAAAPw== \"samples\" Int 1 MgAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== 8 \"bbox_min\" 3 1 \"bbox_max\" 3 1 \"resolution\" 3 1 \"dir\" 3 1 \"intensity\" 1 1 \"absorption\" 1 1 \"samples\" 1 1 \"transform_M\" 16 1 6 \"aabb\" Float 3 2 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \"VoxelSizeInv\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"_dir\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"dir_inv\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"grid_width\" Int 1 1 AAAAAA== \"_samples\" Int 1 1 AAAAAA=="
+  kernelSource "kernel VDirLight : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    float3 dir;\n    float intensity;\n    float absorption;\n    int samples;\n    float4x4 transform_M;\n\n  local:\n    float3 aabb\[2];\n    float3 VoxelSizeInv;\n    float3 _dir;\n    float3 dir_inv;\n    int grid_width;\n    int _samples;\n\n  void define()\n  \{\n    defineParam(intensity, \"intensity\", 1.0f);\n    defineParam(absorption, \"absorption\", 0.5f);\n    defineParam(samples, \"samples\", 50);\n  \}\n\n  void init()\n  \{\n    aabb\[0] = bbox_min;\n    aabb\[1] = bbox_max;\n\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n\n    _dir = multVectMatrix(dir, transform_M.invert());\n    dir_inv = 1.0f / _dir;\n\n    grid_width = voxels.bounds.width();\n    _samples = max(1, samples);\n  \}\n\n  float3 multVectMatrix(float3 vec, float4x4 M)\n  \{\n  \t// Rotation only\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2], // + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2], // + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2]  // + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n  // Axis aligned bounding box intersection for GPU : Shortened for exit only\n  float intersection_exit_AABB(float3 origin, float3 inv_dir)\n  \{\n    //bool sign\[3] \{inv_dir.x < 0, inv_dir.y < 0, inv_dir.z < 0\};\n    float tmin, tmax, tymin, tymax, tzmin, tzmax;\n    bool sign = inv_dir.x < 0 ? 0 : 1;\n    tmax  = (aabb\[sign].x - origin.x) * inv_dir.x;\n    sign = inv_dir.y < 0 ? 0 : 1;\n    tymax = (aabb\[sign].y - origin.y) * inv_dir.y;\n    sign = inv_dir.z < 0 ? 0 : 1;\n    tzmax = (aabb\[sign].z - origin.z) * inv_dir.z;\n    tmax = min(min(tmax, tymax), tzmax);\n    return tmax;\n  \}\n\n  float voxelValue(int3 voxel)\n  \{\n    // Return Empty for values outside of grid\n    if (voxel.x < 0 || resolution.x <= voxel.x ||\n        voxel.y < 0 || resolution.y <= voxel.y ||\n        voxel.z < 0 || resolution.z <= voxel.z )\n      return 0;\n\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y, 3); // Just alpha (density)\n  \}\n\n  float Blend(float3 curpos)\n  \{\n    float3 weight, voxel_space;\n    int3 base_voxel, offset;\n    // Lower Bound of 8 adjacent voxels\n    for (int c = 0; c < 3; c++)\n    \{\n      voxel_space\[c] = curpos\[c] * VoxelSizeInv\[c];\n      base_voxel\[c] = int(floor(voxel_space\[c] - 0.5f));\n    \}\n\n    float result = 0;\n    for (int i = 0; i < 8; i++)\n    \{\n      // Weighted distance on each axis for each adjacent voxel\n      offset = int3(i / 4, (i / 2) % 2, i % 2);\n      weight.x = 1 - fabs(offset.x - (voxel_space.x - (base_voxel.x + 0.5f)));\n      weight.y = 1 - fabs(offset.y - (voxel_space.y - (base_voxel.y + 0.5f)));\n      weight.z = 1 - fabs(offset.z - (voxel_space.z - (base_voxel.z + 0.5f)));\n\n      result += voxelValue(base_voxel + offset) * weight.x * weight.y * weight.z;\n    \}\n\n    return result;\n  \}\n\n  void process(int2 pos)\n  \{\n    // Skip empty voxels\n    float4 v = voxels(pos.x, pos.y);\n    if (v.w <= 0)\n      return;\n\n    // Starting values\n    float3 voxel = float3(v.x, v.y, v.z); // Center of voxel\n\n    // Fire ray towards light, get closest distance\n    float max_dist = intersection_exit_AABB(voxel, dir_inv);\n\n    // ========== Ray Marching ==========\n\n    // Maximum of 1000 samples per voxel\n    float deltaT, result = intensity, step = max(max_dist / _samples, 0.001f);\n    float3 curpos;\n\n    for (float dist = 0; dist <= max_dist; dist += step)\n    \{\n      curpos = voxel - dir * dist;\n      deltaT = exp(-absorption * Blend(curpos - bbox_min) * step);\n      result *= deltaT;\n\n      // End loop if Transmittance is near 0\n      if (result < 1e-6)\n      \tbreak;\n    \}\n\n    dst() = result;\n\n  \}\n\n\};"
+  rebuild ""
+  VDirLight_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
+  VDirLight_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
+  VDirLight_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
+  VDirLight_dir {{-input1.world_matrix.2} {-input1.world_matrix.6} {-input1.world_matrix.10}}
+  VDirLight_intensity {{parent.intensity}}
+  VDirLight_absorption {{parent.absorption}}
+  VDirLight_samples {{parent.samples}}
+  VDirLight_transform_M {
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
+    }
+  rebuild_finalise ""
+  name BlinkScript_directional
+  xpos 448
+  ypos 422
+ }
+ Dot {
+  name Dot11
+  xpos 482
+  ypos 468
+ }
+set N8904080 [stack 0]
+ Dot {
+  name Dot9
+  note_font_size 20
+  xpos 372
+  ypos 468
+ }
+ Multiply {
+  value {{1/intensity}}
+  name Multiply2
+  xpos 338
+  ypos 510
+ }
+ Dot {
+  name Dot7
+  note_font_size 20
+  xpos 372
+  ypos 586
+ }
+set N8919e80 [stack 0]
+push $N88c0430
+ Dot {
+  name Dot3
+  note_font_size 20
+  xpos 152
+  ypos 254
+ }
+ Multiply {
+  channels rgb
+  value 0
+  name Multiply1
+  xpos 118
+  ypos 410
+ }
+ Dot {
+  name Dot5
+  note_font_size 20
+  xpos 152
+  ypos 468
+ }
+set N892f940 [stack 0]
+ Add {
+  value {1 0.915 0.775 1}
+  value_panelDropped true
+  name LIGHT_COL
+  xpos 118
+  ypos 511
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy2
+  xpos 118
+  ypos 576
+ }
+ Dot {
+  name Dot8
+  note_font_size 20
+  xpos 152
+  ypos 717
+ }
+push $N8919e80
+ Invert {
+  channels alpha
+  name Invert1
+  xpos 338
+  ypos 638
+ }
+push $N892f940
+ Dot {
+  name Dot6
+  note_font_size 20
+  xpos 262
+  ypos 468
+ }
+ Add {
+  value {0.165 0.32 0.535 0}
+  value_panelDropped true
+  name SCATTER_COL
+  xpos 228
+  ypos 511
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy1
+  xpos 228
+  ypos 638
+ }
+ Merge2 {
+  inputs 2
+  operation xor
+  name Merge1
+  xpos 228
+  ypos 713
+ }
+ Dot {
+  name Dot10
+  note_font_size 20
+  xpos 262
+  ypos 781
+ }
+push $N8904080
+ Merge2 {
+  inputs 2
+  operation multiply
+  name Merge2
+  xpos 448
+  ypos 777
+ }
+ Dot {
+  name Dot2
+  note_font_size 20
+  xpos 482
+  ypos 918
+ }
+push $N88c0430
+ Dot {
+  name Dot4
+  note_font_size 20
+  xpos 604
+  ypos 254
+ }
+ Merge2 {
+  inputs 2
+  operation plus
+  Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  name Merge
+  xpos 570
+  ypos 914
+ }
+ Output {
+  name Output
+  xpos 570
+  ypos 973
+ }
+end_group
+Group {
+ inputs 0
+ name V_Grid
+ tile_color 0xc44b11ff
+ xpos -260
+ ypos -209
+ addUserKnob {20 VGrid}
+ addUserKnob {31 voxel_bbox l "Bounding Box"}
+ voxel_bbox {-0.5 -0.5 -0.5 0.5 0.5 0.5}
+ addUserKnob {18 gridres l Resolution R 1 256}
+ gridres 64
+ addUserKnob {6 gridres_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {6 uniform -STARTLINE}
+ uniform true
+ addUserKnob {41 color l Color T Constant1.color}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript_grid.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_grid.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_grid.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_grid.maxTileLines}
+}
+ Axis2 {
+  inputs 0
+  display off
+  selectable false
+  name vTransformMatrix
+  xpos -22
+  ypos 124
+  addUserKnob {20 "Ppos Locator"}
+  addUserKnob {18 pointPosition l "Point Position"}
+  pointPosition {0 0 0}
+  addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ }
+ Constant {
+  inputs 0
+  name Constant1
+  xpos 159
+  ypos -138
+ }
+ Reformat {
+  type "to box"
+  box_width {{ceil(sqrt(CONTROL.total))}}
+  box_height {{ceil(sqrt(CONTROL.total))}}
+  box_fixed true
+  resize fill
+  center false
+  name Reformat1
+  xpos 159
+  ypos -29
+ }
+set N81083d0 [stack 0]
+ Dot {
+  name Dot2
+  note_font_size 20
+  xpos 85
+  ypos -25
+ }
+ BlinkScript {
+  kernelSourceFile bin/generate/grid.cpp
+  KernelDescription "1 \"VGrid\" iterate pixelWise 3b140e8cbfda428ac95853bd9e9761e44d4c51aad2633cdb8042495cb9b9755b 2 \"format\" Read Point \"dst\" Write Point 4 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"total\" Int 1 AAAAAA=="
+  kernelSource "kernel VGrid : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead> format;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min; // from origin\n    float3 bbox_max; // from origin\n    int3 resolution;\n    int total;\n\n  local:\n    float3 scale;\n\n  void init()\n  \{\n    for (int c = 0; c < 3; c++)\n      scale\[c] = (bbox_max\[c] - bbox_min\[c]) / resolution\[c];\n  \}\n\n  void process(int2 pos)\n  \{\n    int id = pos.y * dst.bounds.width() + pos.x;\n    if (id >= total)\n    \{\n      dst() = 0;\n      return;\n    \}\n    int xy = id / resolution.z;\n    dst(0) = ((xy % resolution.x) + 0.5f) * scale.x + bbox_min.x;\n    dst(1) = ((xy / resolution.x) + 0.5f) * scale.y + bbox_min.y;\n    dst(2) = ((id % resolution.z) + 0.5f) * scale.z + bbox_min.z;\n    dst(3) = 1;\n  \}\n\};"
+  rebuild ""
+  VGrid_bbox_min {{parent.voxel_bbox.x} {parent.voxel_bbox.y} {parent.voxel_bbox.n}}
+  VGrid_bbox_max {{parent.voxel_bbox.r} {parent.voxel_bbox.t} {parent.voxel_bbox.f}}
+  VGrid_resolution {{CONTROL.resolution.x} {CONTROL.resolution.y} {CONTROL.resolution.z}}
+  VGrid_total {{CONTROL.total}}
+  rebuild_finalise ""
+  name BlinkScript_grid
+  xpos 51
+  ypos 33
+ }
+ Dot {
+  name Dot1
+  note_font_size 20
+  xpos 85
+  ypos 103
+ }
+push $N81083d0
+ ShuffleCopy {
+  inputs 2
+  alpha alpha2
+  black red
+  white green
+  red2 blue
+  green2 alpha
+  out2 voxels
+  name ShuffleCopy1
+  xpos 159
+  ypos 99
+ }
+ ModifyMetaData {
+  metadata {
+   {set bbox "\[value voxel_bbox]"}
+   {set resolution "\[value CONTROL.resolution]"}
+   {set vTransformMatrix "\[value vTransformMatrix.world_matrix]"}
+  }
+  name ModifyMetaData1
+  xpos 159
+  ypos 143
+ }
+ Output {
+  name Output
+  xpos 159
+  ypos 195
+ }
+ NoOp {
+  inputs 0
+  name CONTROL
+  xpos 284
+  ypos 39
+  addUserKnob {20 User}
+  addUserKnob {3 total}
+  total {{"resolution.x * resolution.y * resolution.z"}}
+  addUserKnob {7 res_scale}
+  res_scale {{"gridres.r / (voxel_bbox.r - voxel_bbox.x)"}}
+  addUserKnob {13 resolution}
+  resolution {{"uniform ? rint(res_scale * (voxel_bbox.r - voxel_bbox.x)) : gridres"} {"uniform ? rint(res_scale * (voxel_bbox.t - voxel_bbox.y)) : gridres"} {"uniform ? rint(res_scale * (voxel_bbox.f - voxel_bbox.n)) : gridres"}}
+ }
+end_group
+Group {
+ inputs 0
+ name V_EnvLight
+ tile_color 0xc19139ff
+ xpos -260
+ ypos -57
+ addUserKnob {20 VEnvLight}
+ addUserKnob {6 luminance l "Luminance Based" t "Uses the luminance of the HDRI to light the image." +STARTLINE}
+ addUserKnob {7 rotate l Rotate t "Rotates the spherical mapping" R 0 360}
+ addUserKnob {7 intensity l Intensity}
+ intensity 1
+ addUserKnob {7 absorption l Absorption t "Amount of light absorbed by each voxel."}
+ absorption 0.7
+ addUserKnob {3 range l Range t "Radius of area to blend"}
+ range 2
+ addUserKnob {3 samples l Samples t "How many samples to take per voxel. Higher values will give more accurate results at the cost of speed."}
+ samples 64
+ addUserKnob {26 ""}
+ addUserKnob {41 operation T Merge.operation}
+ addUserKnob {41 mix T Merge.mix}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript_environment.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_environment.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_environment.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_environment.maxTileLines}
+}
+ Input {
+  inputs 0
+  name Inputenv
+  label 0
+  xpos 1007
+  ypos -84
+  number 1
+ }
+ Input {
+  inputs 0
+  name Inputvoxels
+  label 0
+  xpos 1204
+  ypos -348
+ }
+ Dot {
+  name Dot1
+  note_font_size 20
+  xpos 1238
+  ypos -288
+ }
+set N87f2360 [stack 0]
+ Clamp {
+  channels alpha
+  maximum inf
+  name Clamp
+  xpos 1204
+  ypos -244
+ }
+ Shuffle {
+  in2 voxels
+  red red2
+  green green2
+  blue blue2
+  name Shuffle1
+  label "<font size = \"5\"> \[value in]"
+  xpos 1204
+  ypos -198
+  postage_stamp true
+ }
+ BlinkScript {
+  inputs 2
+  kernelSourceFile bin/light/environment.cpp
+  recompileCount 3
+  ProgramGroup 1
+  KernelDescription "2 \"VEnvLight\" iterate pixelWise 225acdc2746eca07af124455c8339bae60231ac225fe547600ae86103c98b855 3 \"voxels\" Read Random \"environment\" Read Random \"dst\" Write Point 9 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"luminance_on\" Bool 1 AA== \"rotate\" Float 1 AAAAAA== \"intensity\" Float 1 AACAPw== \"absorption\" Float 1 AAAAPw== \"samples\" Int 1 MgAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== 9 \"bbox_min\" 3 1 \"bbox_max\" 3 1 \"resolution\" 3 1 \"luminance_on\" 1 1 \"rotate\" 1 1 \"intensity\" 1 1 \"absorption\" 1 1 \"samples\" 1 1 \"transform_M\" 16 1 6 \"aabb\" Float 3 2 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \"VoxelSizeInv\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"_absorption\" Float 1 1 AAAAAA== \"grid_width\" Int 1 1 AAAAAA== \"rad2deg\" Float 1 1 AAAAAA== \"_samples\" Int 1 1 AAAAAA=="
+  kernelSource "kernel VEnvLight : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> voxels;\n  Image<eRead, eAccessRandom> environment;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    bool luminance_on;\n    float rotate;\n    float intensity;\n    float absorption;\n    int samples;\n    float4x4 transform_M;\n\n  local:\n    float3 aabb\[2];\n    float3 VoxelSizeInv;\n    float _absorption;\n    int grid_width;\n    float rad2deg;\n    int _samples;\n\n  void define()\n  \{\n    defineParam(intensity, \"intensity\", 1.0f);\n    defineParam(absorption, \"absorption\", 0.5f);                   // Absorption? Rate of Decay\n    defineParam(samples, \"samples\", 50);\n  \}\n\n  void init()\n  \{\n    aabb\[0] = bbox_min;\n    aabb\[1] = bbox_max;\n    grid_width = voxels.bounds.width();\n\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n\n    _absorption = 1 / (1 - absorption);\n    rad2deg = 180.0f / PI;\n    _samples = max(1, samples);\n  \}\n\n  float3 multVectMatrix(float3 vec, float4x4 M)\n  \{\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n  // Axis aligned bounding box intersection for GPU : Shortened for exit only\n  float intersection_exit_AABB(float3 origin, float3 inv_dir)\n  \{\n    //bool sign\[3] \{inv_dir.x < 0, inv_dir.y < 0, inv_dir.z < 0\};\n    float tmin, tmax, tymin, tymax, tzmin, tzmax;\n    bool sign = inv_dir.x < 0 ? 0 : 1;\n    tmax  = (aabb\[sign].x - origin.x) * inv_dir.x;\n    sign = inv_dir.y < 0 ? 0 : 1;\n    tymax = (aabb\[sign].y - origin.y) * inv_dir.y;\n    sign = inv_dir.z < 0 ? 0 : 1;\n    tzmax = (aabb\[sign].z - origin.z) * inv_dir.z;\n    tmax = min(min(tmax, tymax), tzmax);\n    return tmax;\n  \}\n\n  float voxelValue(int3 voxel)\n  \{\n    // Return Empty for values outside of grid\n    if (voxel.x < 0 || resolution.x <= voxel.x ||\n        voxel.y < 0 || resolution.y <= voxel.y ||\n        voxel.z < 0 || resolution.z <= voxel.z )\n      return 0;\n\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y, 3); // Just alpha (density)\n  \}\n\n  float Blend(float3 curpos)\n  \{\n    float3 weight, voxel_space;\n    int3 base_voxel, offset;\n    // Lower Bound of 8 adjacent voxels\n    for (int c = 0; c < 3; c++)\n    \{\n      voxel_space\[c] = curpos\[c] * VoxelSizeInv\[c];\n      base_voxel\[c] = int(floor(voxel_space\[c] - 0.5f));\n    \}\n\n    float result = 0;\n    for (int i = 0; i < 8; i++)\n    \{\n      // Weighted distance on each axis for each adjacent voxel\n      offset = int3(i / 4, (i / 2) % 2, i % 2);\n      weight.x = 1 - fabs(offset.x - (voxel_space.x - (base_voxel.x + 0.5f)));\n      weight.y = 1 - fabs(offset.y - (voxel_space.y - (base_voxel.y + 0.5f)));\n      weight.z = 1 - fabs(offset.z - (voxel_space.z - (base_voxel.z + 0.5f)));\n\n      result += voxelValue(base_voxel + offset) * weight.x * weight.y * weight.z;\n    \}\n\n    return result;\n  \}\n\n  void process(int2 pos)\n  \{\n    // Skip empty voxels\n    float4 v = voxels(pos.x, pos.y);\n    if (v.w <= 0)\n      return;\n\n\n    // ========== AMBIENT LIGHT ==========\n\n    // Fire a ray from outer sphere to voxel, accumulate fog\n\n    // Starting values\n    float3 voxel = float3(v.x, v.y, v.z); // Center of voxel\n\n    int3 voxel_i;\n    for (int c = 0; c < 3; c++)\n      voxel_i\[c] = (voxel\[c] - bbox_min\[c]) * VoxelSizeInv\[c];\n\n    float3 normal = float3(\n      voxelValue(voxel_i - int3(1,0,0)) - voxelValue(voxel_i + int3(1,0,0)),\n      voxelValue(voxel_i - int3(0,1,0)) - voxelValue(voxel_i + int3(0,1,0)),\n      voxelValue(voxel_i - int3(0,0,1)) - voxelValue(voxel_i + int3(0,0,1))\n      );\n\n    float3 dir = -normalize(normal);\n    // Skip directionless voxels\n    if (dir.x == 0 && dir.y == 0 && dir.z == 0) return;\n\n    float3 dir_inv = 1.0f / dir;\n\n    // Convert direction to latlong coordinates\n    float3 env_dir = normalize(multVectMatrix(dir, transform_M));\n    float x = (fmod((rad2deg * atan2(env_dir.z, env_dir.x) + rotate), 360.0f) / 360.0f + 0.5f) * environment.bounds.width();\n    float y = ((rad2deg * acos(env_dir.y)) / 180.0f) * environment.bounds.height();\n\n    float4 colour = environment(x, y);\n    float luminance = (colour.x * 0.3f + colour.y * 0.59f + colour.z * 0.11f) * intensity;\n\n    // Move starting point to whatever's closest: intersection / light\n    float max_dist = intersection_exit_AABB(voxel, -dir_inv);\n\n    // ========== Ray Marching ==========\n\n    // Maximum of 1000 samples per voxel\n    float result = luminance * luminance_on + intensity * (1 - luminance_on);\n    float deltaT = 1, step = max(max_dist / _samples, 0.001f);\n    float3 curpos;\n\n    for (float dist = 0; dist <= max_dist; dist += step)\n    \{\n      curpos = voxel - dir * dist;\n      deltaT = exp(-absorption * Blend(curpos - bbox_min) * step);\n      result *= deltaT;\n\n      // End loop if Transmittance is near 0\n      if (result < 1e-6)\n        break;\n      //dist += (result < 1e-6) * max_dist;\n    \}\n\n    dst() = result * environment(x, y);\n    dst(3) = v.w;\n    \n  \}\n\n\};"
+  rebuild ""
+  VEnvLight_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
+  VEnvLight_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
+  VEnvLight_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
+  VEnvLight_luminance_on {{parent.luminance}}
+  VEnvLight_rotate {{parent.rotate}}
+  VEnvLight_intensity {{intensity}}
+  VEnvLight_absorption {{absorption}}
+  VEnvLight_samples {{samples}}
+  VEnvLight_transform_M {
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
+    }
+  rebuild_finalise ""
+  name BlinkScript_environment
+  xpos 1204
+  ypos -84
+ }
+ Crop {
+  box {0 0 {width} {height}}
+  reformat true
+  crop false
+  name Crop
+  xpos 1204
+  ypos -46
+ }
+ Group {
+  name V_Average1
+  knobChanged "\nif nuke.thisKnob().name() == \"weight_channels\":\n    knob = nuke.thisNode().knob(\"weight\")\n    value = nuke.thisKnob().getValue()\n    if value < 3:\n        knob.setFlag(0x00040000)\n    else:\n        knob.clearFlag(0x00040000)\n"
+  tile_color 0xc17a39ff
+  xpos 1204
+  ypos -20
+  addUserKnob {20 vaverage l "Voxel Average"}
+  addUserKnob {3 range l Range t "The radius of the area to blend.\nWill only average voxels with positive density."}
+  range {{parent.range}}
+  addUserKnob {4 weight_channels l "         Channels" t "Channels to be blended together. Custom can be used to set individual weights per channel" M {rgb rgba alpha custom "" "" "" ""}}
+  addUserKnob {19 weight l Weight t "Individual weights (0 to 1) to blend per channel" +HIDDEN}
+  weight {0.5 0.5 0.5 0}
+  addUserKnob {6 weight_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ }
+  Input {
+   inputs 0
+   name Input
+   xpos 362
+   ypos -626
+  }
+  Dot {
+   name Dot13
+   note_font_size 20
+   xpos 396
+   ypos -557
+  }
+set N88543e0 [stack 0]
+  Shuffle {
+   in voxels
+   in2 rgba
+   alpha alpha2
+   name Shuffle2
+   label "<font size = \"5\"> \[value in]"
+   xpos 533
+   ypos -597
+   postage_stamp true
+  }
+  Dot {
+   name Dot14
+   note_font_size 20
+   xpos 567
+   ypos -436
+  }
+push $N88543e0
+  BlinkScript {
+   inputs 2
+   kernelSourceFile C:/Users/mshaw/Documents/Tests/Blink/Cloud_Gen_03/Scripts/WORKING/VoxelAverage_transform_002.cpp
+   ProgramGroup 1
+   KernelDescription "1 \"VoxelAverage\" iterate pixelWise 6c113d5dedc64ba6e56941b86052ff305117ae1399471bb6912c3cbe74066441 3 \"colour\" Read Random \"voxels\" Read Random \"dst\" Write Point 5 \"weight\" Float 4 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"range\" Int 1 AAAAAA=="
+   kernelSource "kernel VoxelAverage : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> colour;\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float4 weight;\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    int range;\n\n  local:\n    float4 _weight;\n    float3 VoxelSizeInv;\n    int grid_width;\n    float max_length;\n\n  void init()\n  \{\n    for (int c = 0; c < 3; c++)\n    \{\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n      _weight\[c] = clamp(weight\[c], 0.0f, 1.0f);\n    \}\n    _weight.w = clamp(weight.w, 0.0f, 1.0f);\n    grid_width = voxels.bounds.width();\n  \}\n\n  float4 voxelValue(int3 voxel)\n  \{\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return colour(x, y);\n  \}\n\n  void process(int2 pos)\n  \{\n    float4 current = voxels(pos.x, pos.y);\n\n    int3 voxel;\n    for (int c = 0; c < 3; c++)\n      voxel\[c] = int((current\[c] - bbox_min\[c]) * VoxelSizeInv\[c]);\n\n    float4 value, result = 0;\n    int total = 0;\n\n    // Maximum value within specified range\n    for (int i = max(voxel.x - range, 0); i <= min(voxel.x + range, resolution.x - 1); i++)\n      for (int j = max(voxel.y - range, 0); j <= min(voxel.y + range, resolution.y - 1); j++)\n        for (int k = max(voxel.z - range, 0); k <= min(voxel.z + range, resolution.z - 1); k++)\n        \{\n          value = voxelValue(int3(i, j, k));\n          total += (value.w > 0);\n          result += value * (value.w > 0);\n        \}\n    \n    current = voxelValue(voxel);\n    if (total < 1)\n      dst() = current;\n    else\n      for (int c = 0; c < 4; c++)\n        dst(c) = (result\[c] / total - current\[c]) * _weight\[c] + current\[c];\n  \}\n\};"
+   rebuild ""
+   VoxelAverage_weight {{"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels == 0 ? 0 : (weight_channels == 1 || weight_channels == 2 ? 1 : weight)"}}
+   VoxelAverage_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
+   VoxelAverage_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
+   VoxelAverage_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
+   VoxelAverage_range {{parent.range}}
+   rebuild_finalise ""
+   name BlinkScript3
+   selected true
+   xpos 362
+   ypos -446
+  }
+  Output {
+   name Output1
+   xpos 362
+   ypos -346
+  }
+ end_group
+ Dot {
+  name Dot3
+  note_font_size 20
+  xpos 1238
+  ypos 51
+ }
+push $N87f2360
+ Dot {
+  name Dot2
+  note_font_size 20
+  xpos 1354
+  ypos -288
+ }
+ Merge2 {
+  inputs 2
+  operation plus
+  Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  name Merge
+  xpos 1320
+  ypos 47
+ }
+ Output {
+  name Output
+  xpos 1320
+  ypos 108
+ }
+end_group
+Group {
+ inputs 0
+ name V_PtLight
+ tile_color 0xc19139ff
+ xpos -370
+ ypos -57
+ addUserKnob {20 VPtLight}
+ addUserKnob {41 value l "Light Colour" T LIGHT_COL.value}
+ addUserKnob {41 value_1 l "Scatter Colour" T SCATTER_COL.value}
+ addUserKnob {7 intensity l Intensity}
+ intensity 1
+ addUserKnob {7 absorption l Absorption t "Amount of light absorbed by each voxel."}
+ absorption 0.5
+ addUserKnob {3 samples l Samples t "How many samples to take per pixel. higher values will give more accurate results at the cost of speed."}
+ samples 64
+ addUserKnob {26 ""}
+ addUserKnob {41 operation T Merge.operation}
+ addUserKnob {41 mix T Merge.mix}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript_point.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_point.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_point.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_point.maxTileLines}
+}
+ Input {
+  inputs 0
+  name Inputlight
+  label 1
+  xpos 725
+  ypos -4
+  number 1
+ }
+ Input {
+  inputs 0
+  name Inputvoxels
+  label 0
+  xpos 603
+  ypos -4
+ }
+ Dot {
+  name Dot1
+  note_font_size 20
+  xpos 637
+  ypos 74
+ }
+set N86dded0 [stack 0]
+ Clamp {
+  channels alpha
+  maximum inf
+  name Clamp
+  xpos 603
+  ypos 116
+ }
+ Shuffle {
+  in2 voxels
+  red red2
+  green green2
+  blue blue2
+  name Shuffle1
+  label "<font size = \"5\"> \[value in]"
+  xpos 603
+  ypos 158
+  postage_stamp true
+ }
+ BlinkScript {
+  kernelSourceFile bin/light/point.cpp
+  recompileCount 1
+  ProgramGroup 1
+  KernelDescription "2 \"VPtLight\" iterate pixelWise 3970e420d27d661986efe10ae3362d4593af2221d5f9d0f84cb692898ac01e3c 2 \"voxels\" Read Random \"dst\" Write Point 8 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"light\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"intensity\" Float 1 AACAPw== \"absorption\" Float 1 AAAAPw== \"samples\" Int 1 MgAAAA== \"transform_M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== 8 \"bbox_min\" 3 1 \"bbox_max\" 3 1 \"resolution\" 3 1 \"light\" 3 1 \"intensity\" 1 1 \"absorption\" 1 1 \"samples\" 1 1 \"transform_M\" 16 1 5 \"aabb\" Float 3 2 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \"VoxelSizeInv\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"_light\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"grid_width\" Int 1 1 AAAAAA== \"_samples\" Int 1 1 AAAAAA=="
+  kernelSource "kernel VPtLight : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    float3 light;\n    float intensity;\n    float absorption;\n    int samples;\n    float4x4 transform_M;\n\n  local:\n    float3 aabb\[2];\n    float3 VoxelSizeInv;\n    float3 _light;\n    int grid_width;\n    int _samples;\n\n  void define()\n  \{\n    defineParam(intensity, \"intensity\", 1.0f);\n    defineParam(absorption, \"absorption\", 0.5f);\n    defineParam(samples, \"samples\", 50);\n  \}\n\n  void init()\n  \{\n    aabb\[0] = bbox_min;\n    aabb\[1] = bbox_max;\n\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n\n    _light = multVectMatrix(light, transform_M.invert());\n\n    grid_width = voxels.bounds.width();\n    _samples = max(1, samples);\n  \}\n\n  float3 multVectMatrix(float3 vec, float4x4 M)\n  \{\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n  // Axis aligned bounding box intersection for GPU : Shortened for exit only\n  float intersection_exit_AABB(float3 origin, float3 inv_dir)\n  \{\n    //bool sign\[3] \{inv_dir.x < 0, inv_dir.y < 0, inv_dir.z < 0\};\n    float tmin, tmax, tymin, tymax, tzmin, tzmax;\n    bool sign = inv_dir.x < 0 ? 0 : 1;\n    tmax  = (aabb\[sign].x - origin.x) * inv_dir.x;\n    sign = inv_dir.y < 0 ? 0 : 1;\n    tymax = (aabb\[sign].y - origin.y) * inv_dir.y;\n    sign = inv_dir.z < 0 ? 0 : 1;\n    tzmax = (aabb\[sign].z - origin.z) * inv_dir.z;\n    tmax = min(min(tmax, tymax), tzmax);\n    return tmax;\n  \}\n\n  float voxelValue(int3 voxel)\n  \{\n    // Return Empty for values outside of grid\n    if (voxel.x < 0 || resolution.x <= voxel.x ||\n        voxel.y < 0 || resolution.y <= voxel.y ||\n        voxel.z < 0 || resolution.z <= voxel.z )\n      return 0;\n\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y, 3); // Just alpha (density)\n  \}\n\n  float Blend(float3 curpos)\n  \{\n    float3 weight, voxel_space;\n    int3 base_voxel, offset;\n    // Lower Bound of 8 adjacent voxels\n    for (int c = 0; c < 3; c++)\n    \{\n      voxel_space\[c] = curpos\[c] * VoxelSizeInv\[c];\n      base_voxel\[c] = int(floor(voxel_space\[c] - 0.5f));\n    \}\n\n    float result = 0;\n    for (int i = 0; i < 8; i++)\n    \{\n      // Weighted distance on each axis for each adjacent voxel\n      offset = int3(i / 4, (i / 2) % 2, i % 2);\n      weight.x = 1 - fabs(offset.x - (voxel_space.x - (base_voxel.x + 0.5f)));\n      weight.y = 1 - fabs(offset.y - (voxel_space.y - (base_voxel.y + 0.5f)));\n      weight.z = 1 - fabs(offset.z - (voxel_space.z - (base_voxel.z + 0.5f)));\n\n      result += voxelValue(base_voxel + offset) * weight.x * weight.y * weight.z;\n    \}\n\n    return result;\n  \}\n\n  void process(int2 pos)\n  \{\n    // Skip empty voxels\n    float4 v = voxels(pos.x, pos.y);\n    if (v.w <= 0)\n      return;\n\n    // Starting values\n    float3 voxel = float3(v.x, v.y, v.z); // Center of voxel\n    float3 dir = voxel - _light; // from light to voxel\n    float dist_to_light = length(dir);\n    dir /= dist_to_light;\n\n    // Fire ray towards light, get closest distance\n    float max_dist = min(dist_to_light, intersection_exit_AABB(voxel, -1.0f / dir));\n\n    // ========== Ray Marching ==========\n\n    // Maximum of 1000 samples per voxel\n    float deltaT, result = intensity, step = max(max_dist / _samples, 0.001f);\n    float3 curpos;\n\n    for (float dist = 0; dist <= max_dist; dist += step)\n    \{\n      curpos = voxel - dir * dist;\n      deltaT = exp(-absorption * Blend(curpos - bbox_min) * step);\n      result *= deltaT;\n\n      // End loop if Transmittance is near 0\n      if (result < 1e-6)\n      \tbreak;\n      //dist += (result < 1e-6) * max_dist;\n    \}\n\n    dst() = result;\n\n  \}\n\n\};"
+  rebuild ""
+  VPtLight_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
+  VPtLight_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
+  VPtLight_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
+  VPtLight_light {{input1.world_matrix.3} {input1.world_matrix.7} {input1.world_matrix.11}}
+  VPtLight_intensity {{parent.intensity}}
+  VPtLight_absorption {{parent.absorption}}
+  VPtLight_samples {{parent.samples}}
+  VPtLight_transform_M {
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 0] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 1] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 2] 3]"}}
+      {{"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 0]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 1]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 2]"} {"\[lindex \[lindex \[metadata vTransformMatrix frame] 3] 3]"}}
+    }
+  rebuild_finalise ""
+  name BlinkScript_point
+  xpos 603
+  ypos 278
+ }
+set N8702a70 [stack 0]
+ Dot {
+  name Dot9
+  note_font_size 20
+  xpos 527
+  ypos 288
+ }
+ Multiply {
+  value {{1/intensity}}
+  name Multiply2
+  xpos 493
+  ypos 330
+ }
+ Dot {
+  name Dot7
+  note_font_size 20
+  xpos 527
+  ypos 406
+ }
+set N8732bb0 [stack 0]
+push $N86dded0
+ Dot {
+  name Dot3
+  note_font_size 20
+  xpos 307
+  ypos 74
+ }
+ Multiply {
+  channels rgb
+  value 0
+  name Multiply1
+  xpos 273
+  ypos 230
+ }
+ Dot {
+  name Dot5
+  note_font_size 20
+  xpos 307
+  ypos 288
+ }
+set N87486b0 [stack 0]
+ Add {
+  value {1 0.915 0.775 1}
+  value_panelDropped true
+  name LIGHT_COL
+  xpos 273
+  ypos 331
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy2
+  xpos 273
+  ypos 396
+ }
+ Dot {
+  name Dot8
+  note_font_size 20
+  xpos 307
+  ypos 537
+ }
+push $N8732bb0
+ Invert {
+  channels alpha
+  name Invert1
+  xpos 493
+  ypos 458
+ }
+push $N87486b0
+ Dot {
+  name Dot6
+  note_font_size 20
+  xpos 417
+  ypos 288
+ }
+ Add {
+  value {0.165 0.32 0.535 0}
+  value_panelDropped true
+  name SCATTER_COL
+  xpos 383
+  ypos 331
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy1
+  xpos 383
+  ypos 458
+ }
+ Merge2 {
+  inputs 2
+  operation xor
+  name Merge1
+  xpos 383
+  ypos 533
+ }
+ Dot {
+  name Dot10
+  note_font_size 20
+  xpos 417
+  ypos 601
+ }
+push $N8702a70
+ Merge2 {
+  inputs 2
+  operation multiply
+  name Merge2
+  xpos 603
+  ypos 597
+ }
+ Dot {
+  name Dot2
+  note_font_size 20
+  xpos 637
+  ypos 738
+ }
+push $N86dded0
+ Dot {
+  name Dot4
+  note_font_size 20
+  xpos 759
+  ypos 74
+ }
+ Merge2 {
+  inputs 2
+  operation plus
+  Achannels {rgba.red rgba.green rgba.blue -rgba.alpha}
+  name Merge
+  xpos 725
+  ypos 734
+ }
+ Output {
+  name Output
+  xpos 725
+  ypos 793
  }
 end_group
 Group {
@@ -1574,7 +1306,7 @@ Group {
  addUserKnob {41 scaling l scale T LOCAL_TRANSFORM.scaling}
  addUserKnob {41 uniform_scale l "uniform scale" T LOCAL_TRANSFORM.uniform_scale}
  addUserKnob {41 skew T LOCAL_TRANSFORM.skew}
- addUserKnob {41 pivot T LOCAL_TRANSFORM.pivot}
+ addUserKnob {41 pivot +INVISIBLE T LOCAL_TRANSFORM.pivot}
  addUserKnob {20 graphics l GPU}
  addUserKnob {41 "Local GPU: " T BlinkScript_transform_data.gpuName}
  addUserKnob {41 "Use GPU if Available" T BlinkScript_transform_data.useGPUIfAvailable}
@@ -1593,21 +1325,21 @@ Group {
   xpos 474
   ypos 5
  }
-set N356a2800 [stack 0]
+set N8ad0040 [stack 0]
  Dot {
   name Dot3
   note_font_size 20
   xpos 287
   ypos 5
  }
-set N6c696c00 [stack 0]
+set N8ad4c30 [stack 0]
  Dot {
   name Dot4
   note_font_size 20
   xpos 287
   ypos 230
  }
-push $N6c696c00
+push $N8ad4c30
  Dot {
   name Dot2
   note_font_size 20
@@ -1638,6 +1370,7 @@ push $N6c696c00
       {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
       {{LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix} {LOCAL_TRANSFORM.matrix}}
     }
+  rebuild_finalise ""
   name BlinkScript_transform_data
   selected true
   xpos 124
@@ -1649,7 +1382,7 @@ push $N6c696c00
   xpos 158
   ypos 315
  }
-push $N356a2800
+push $N8ad0040
  NoOp {
   name METADATA_READ
   xpos 440
@@ -1707,3 +1440,299 @@ push $N356a2800
   addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
  }
 end_group
+Group {
+ inputs 0
+ name V_Average
+ knobChanged "\nif nuke.thisKnob().name() == \"weight_channels\":\n    knob = nuke.thisNode().knob(\"weight\")\n    value = nuke.thisKnob().getValue()\n    if value < 3:\n        knob.setFlag(0x00040000)\n    else:\n        knob.clearFlag(0x00040000)\n"
+ tile_color 0xc17939ff
+ xpos -150
+ ypos -130
+ addUserKnob {20 VAverage}
+ addUserKnob {3 range l Range t "The radius of the area to blend.\nWill only average voxels with positive density."}
+ addUserKnob {4 weight_channels l "         Channels" t "Channels to be blended together. Custom can be used to set individual weights per channel" M {rgb rgba alpha Custom ""}}
+ addUserKnob {19 weight l Weight +HIDDEN}
+ weight {0.5 0.5 0.5 0.5}
+ addUserKnob {6 weight_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript_average.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_average.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_average.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_average.maxTileLines}
+}
+ Input {
+  inputs 0
+  name Input
+  xpos 255
+  ypos 53
+ }
+ Dot {
+  name Dot13
+  note_font_size 20
+  xpos 289
+  ypos 122
+ }
+set N86914d0 [stack 0]
+ Shuffle {
+  in voxels
+  in2 rgba
+  alpha alpha2
+  name Shuffle2
+  label "<font size = \"5\"> \[value in]"
+  xpos 426
+  ypos 82
+  postage_stamp true
+ }
+ Dot {
+  name Dot14
+  note_font_size 20
+  xpos 460
+  ypos 243
+ }
+push $N86914d0
+ BlinkScript {
+  inputs 2
+  kernelSourceFile bin/transform/average.cpp
+  recompileCount 1
+  ProgramGroup 1
+  KernelDescription "2 \"VAverage\" iterate pixelWise 2d8525d7ab50d97e24399e054560862c62cacd8c388d3e33f622e673acd378f6 3 \"colour\" Read Random \"voxels\" Read Random \"dst\" Write Point 5 \"weight\" Float 4 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"range\" Int 1 AAAAAA== 5 \"weight\" 4 1 \"bbox_min\" 3 1 \"bbox_max\" 3 1 \"resolution\" 3 1 \"range\" 1 1 4 \"_weight\" Float 4 1 AAAAAAAAAAAAAAAAAAAAAA== \"VoxelSizeInv\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"grid_width\" Int 1 1 AAAAAA== \"max_length\" Float 1 1 AAAAAA=="
+  kernelSource "kernel VAverage : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> colour;\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float4 weight;\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    int range;\n\n  local:\n    float4 _weight;\n    float3 VoxelSizeInv;\n    int grid_width;\n    float max_length;\n\n  void init()\n  \{\n    for (int c = 0; c < 3; c++)\n    \{\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n      _weight\[c] = clamp(weight\[c], 0.0f, 1.0f);\n    \}\n    _weight.w = clamp(weight.w, 0.0f, 1.0f);\n    grid_width = voxels.bounds.width();\n    max_length = range * range;\n  \}\n\n  float4 voxelValue(int3 voxel)\n  \{\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return colour(x, y);\n  \}\n\n  void process(int2 pos)\n  \{\n    float4 current = voxels(pos.x, pos.y);\n\n    int3 voxel;\n    for (int c = 0; c < 3; c++)\n      voxel\[c] = int((current\[c] - bbox_min\[c]) * VoxelSizeInv\[c]);\n\n    float4 value, result = 0;\n    int total = 0;\n    float length;\n\n    // Maximum value within specified range\n    for (int i = max(voxel.x - range, 0); i <= min(voxel.x + range, resolution.x - 1); i++)\n      for (int j = max(voxel.y - range, 0); j <= min(voxel.y + range, resolution.y - 1); j++)\n        for (int k = max(voxel.z - range, 0); k <= min(voxel.z + range, resolution.z - 1); k++)\n        \{\n          length = pow(i - voxel.x, 2) + pow(j - voxel.y, 2) + pow(k - voxel.z, 2);\n          value = voxelValue(int3(i, j, k)) * (length <= max_length);\n          total += (value.w > 0);\n          result += value * (value.w > 0);\n        \}\n    \n    current = voxelValue(voxel);\n    if (total < 1)\n      dst() = current;\n    else\n      for (int c = 0; c < 4; c++)\n        dst(c) = (result\[c] / total - current\[c]) * _weight\[c] + current\[c];\n  \}\n\};"
+  rebuild ""
+  VAverage_weight {{"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels < 2 ? 1 : (weight_channels == 2 ? 0 : weight)"} {"weight_channels == 0 ? 0 : (weight_channels == 1 || weight_channels == 2 ? 1 : weight)"}}
+  VAverage_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
+  VAverage_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
+  VAverage_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
+  VAverage_range {{parent.range}}
+  rebuild_finalise ""
+  name BlinkScript_average
+  xpos 255
+  ypos 233
+ }
+ Output {
+  name Output
+  xpos 255
+  ypos 333
+ }
+end_group
+Group {
+ inputs 0
+ name V_Erode
+ tile_color 0xc17939ff
+ xpos -260
+ ypos -130
+ addUserKnob {20 VoxelErode}
+ addUserKnob {7 size l Size R -5 5}
+ addUserKnob {41 mix T Copy1.mix}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript_erode.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_erode.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_erode.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_erode.maxTileLines}
+}
+ Input {
+  inputs 0
+  name Input
+  xpos 77
+  ypos -218
+ }
+ Dot {
+  name Dot1
+  note_font_size 20
+  xpos 111
+  ypos -183
+ }
+set N86369f0 [stack 0]
+ Shuffle {
+  in2 voxels
+  red red2
+  green green2
+  blue blue2
+  name Shuffle1
+  label "<font size = \"5\"> \[value in]"
+  xpos 77
+  ypos -146
+  postage_stamp true
+ }
+ BlinkScript {
+  kernelSourceFile bin/transform/erode.cpp
+  recompileCount 1
+  KernelDescription "2 \"VErode\" iterate pixelWise 4a8074b730e41e8384f9d3916e192849b41b1c393dd533aaac272cff9fe62f3b 2 \"voxels\" Read Random \"dst\" Write Point 4 \"bbox_min\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"bbox_max\" Float 3 AAAAAAAAAAAAAAAAAAAAAA== \"resolution\" Int 3 AAAAAAAAAAAAAAAAAAAAAA== \"size\" Float 1 AAAAAA== 4 \"bbox_min\" 3 1 \"bbox_max\" 3 1 \"resolution\" 3 1 \"size\" 1 1 5 \"VoxelSizeInv\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"negative\" Bool 1 1 AA== \"grid_width\" Int 1 1 AAAAAA== \"range\" Int 1 1 AAAAAA== \"max_length\" Float 1 1 AAAAAA=="
+  kernelSource "kernel VErode : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom> voxels;\n  Image<eWrite> dst;\n\n  param:\n    float3 bbox_min;\n    float3 bbox_max;\n    int3 resolution;\n    float size;\n\n  local:\n    float3 VoxelSizeInv;\n    bool negative;\n    int grid_width;\n    int range;\n    float max_length;\n\n  void init()\n  \{\n    for (int c = 0; c < 3; c++)\n      VoxelSizeInv\[c] = resolution\[c] / (bbox_max\[c] - bbox_min\[c]);\n    negative = size < 0;\n    grid_width = voxels.bounds.width();\n    range = negative ? floor(size) : ceil(size);\n    max_length = size * size;\n  \}\n\n  float voxelValue(int3 voxel)\n  \{\n    int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;\n    int x = id % grid_width;\n    int y = id / grid_width;\n    return voxels(x, y, 3); // Just alpha (density)\n  \}\n\n  void process(int2 pos)\n  \{\n    float4 current = voxels(pos.x, pos.y);\n    int3 voxel;\n    for (int c = 0; c < 3; c++)\n      voxel\[c] = int((current\[c] - bbox_min\[c]) * VoxelSizeInv\[c]);\n\n    float length, new_val = voxelValue(voxel);\n    if (negative)\n    \{\n      // Minimum value within specified range\n      for (int i = max(voxel.x + range, 0); i <= min(voxel.x - range, resolution.x - 1); i++)\n        for (int j = max(voxel.y + range, 0); j <= min(voxel.y - range, resolution.y - 1); j++)\n          for (int k = max(voxel.z + range, 0); k <= min(voxel.z - range, resolution.z - 1); k++)\n          \{\n            length = pow(i - voxel.x, 2) + pow(j - voxel.y, 2) + pow(k - voxel.z, 2);\n            new_val = min(new_val, voxelValue(int3(i, j, k)) + 10000.0f * (length > max_length));\n          \}\n    \}\n    else\n    \{\n      // Maximum value within specified range\n      for (int i = max(voxel.x - range, 0); i <= min(voxel.x + range, resolution.x - 1); i++)\n        for (int j = max(voxel.y - range, 0); j <= min(voxel.y + range, resolution.y - 1); j++)\n          for (int k = max(voxel.z - range, 0); k <= min(voxel.z + range, resolution.z - 1); k++)\n          \{\n            length = pow(i - voxel.x, 2) + pow(j - voxel.y, 2) + pow(k - voxel.z, 2);\n            new_val = max(new_val, voxelValue(int3(i, j, k)) - 10000.0f * (length > max_length));\n          \}\n    \}\n\n    dst() = current;\n    dst(3) = new_val;\n  \}\n\};"
+  rebuild ""
+  VErode_bbox_min {{"\[lindex \[metadata bbox] 0]"} {"\[lindex \[metadata bbox] 1]"} {"\[lindex \[metadata bbox] 2]"}}
+  VErode_bbox_max {{"\[lindex \[metadata bbox] 3]"} {"\[lindex \[metadata bbox] 4]"} {"\[lindex \[metadata bbox] 5]"}}
+  VErode_resolution {{"\[lindex \[metadata resolution] 0]"} {"\[lindex \[metadata resolution] 1]"} {"\[lindex \[metadata resolution] 2]"}}
+  VErode_size {{parent.size}}
+  rebuild_finalise ""
+  name BlinkScript_erode
+  xpos 77
+  ypos -38
+ }
+ Dot {
+  name Dot2
+  note_font_size 20
+  xpos 111
+  ypos 28
+ }
+push $N86369f0
+ Dot {
+  name Dot3
+  note_font_size 20
+  xpos 213
+  ypos -183
+ }
+ Copy {
+  inputs 2
+  from0 rgba.alpha
+  to0 rgba.alpha
+  name Copy1
+  xpos 179
+  ypos 18
+ }
+ Output {
+  name Output
+  xpos 179
+  ypos 87
+ }
+end_group
+Group {
+ inputs 0
+ name V_Noise
+ tile_color 0xc17939ff
+ xpos -370
+ ypos -130
+ addUserKnob {20 VFNoise}
+ addUserKnob {7 offset l Offset t "Expands or shrinks the noise" R -1 1}
+ addUserKnob {7 density l Density R 0 100}
+ density 1
+ addUserKnob {26 ""}
+ addUserKnob {3 seed l Seed}
+ seed 123
+ addUserKnob {7 size l Size R 0 100}
+ size 0.5
+ addUserKnob {3 octaves l Octaves}
+ octaves 5
+ addUserKnob {7 lacunarity l Lacunarity R 0 2}
+ lacunarity 1.95
+ addUserKnob {7 persistence l Persistence}
+ persistence 0.43
+ addUserKnob {26 ""}
+ addUserKnob {41 operation T ChannelMerge1.operation}
+ addUserKnob {41 mix T ChannelMerge1.mix}
+ addUserKnob {20 transform l Transform}
+ addUserKnob {41 translate T NOISE_TRANSFORM.translate}
+ addUserKnob {41 rotate T NOISE_TRANSFORM.rotate}
+ addUserKnob {41 scaling l scale T NOISE_TRANSFORM.scaling}
+ addUserKnob {41 uniform_scale l "uniform scale" T NOISE_TRANSFORM.uniform_scale}
+ addUserKnob {41 skew T NOISE_TRANSFORM.skew}
+ addUserKnob {41 pivot +INVISIBLE T NOISE_TRANSFORM.pivot}
+ addUserKnob {20 graphics l GPU}
+ addUserKnob {41 "Local GPU: " T BlinkScript_noise.gpuName}
+ addUserKnob {41 "Use GPU if Available" T BlinkScript_noise.useGPUIfAvailable}
+ addUserKnob {41 maxGPUMemory l "Percentage of GPU memory to use" T BlinkScript_noise.maxGPUMemory}
+ addUserKnob {41 maxTileLines l "Percentage of image height per tile" T BlinkScript_noise.maxTileLines}
+}
+ Axis2 {
+  inputs 0
+  name NOISE_TRANSFORM
+  xpos 397
+  ypos -93
+  addUserKnob {20 "Ppos Locator"}
+  addUserKnob {18 pointPosition l "Point Position"}
+  pointPosition {0 0 0}
+  addUserKnob {6 pointPosition_panelDropped l "panel dropped state" -STARTLINE +HIDDEN}
+ }
+ Input {
+  inputs 0
+  name Input
+  xpos 519
+  ypos -287
+ }
+ Dot {
+  name Dot1
+  note_font_size 20
+  xpos 553
+  ypos -231
+ }
+set N85c0d80 [stack 0]
+ Shuffle {
+  in2 voxels
+  red red2
+  green green2
+  blue blue2
+  name Shuffle1
+  label "<font size = \"5\"> \[value in]"
+  xpos 519
+  ypos -196
+  postage_stamp true
+ }
+ BlinkScript {
+  kernelSourceFile bin/transform/noise.cpp
+  recompileCount 1
+  KernelDescription "2 \"VFNoise\" iterate pixelWise 34a810270fc1fb88aee95a601a5a9ed1a588b6b1bf0b3b3053b4587f7015bd0c 2 \"voxels\" Read Point \"dst\" Write Point 6 \"seed\" Int 1 AAAAAA== \"Size\" Float 1 AADwQQ== \"Octaves\" Int 1 BAAAAA== \"Lacunarity\" Float 1 AAAAQA== \"Persistence\" Float 1 AAAAPw== \"M\" Float 16 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA== 6 \"seed\" 1 1 \"size\" 1 1 \"octaves\" 1 1 \"lacunarity\" 1 1 \"persistence\" 1 1 \"M\" 16 1 3 \"seed_offset\" Float 3 1 AAAAAAAAAAAAAAAAAAAAAA== \"frequency\" Float 1 1 AAAAAA== \"M_inv\" Float 16 1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  kernelSource "// C++11\n#define RAND_MULTIPLIER 48271\n#define RAND_INCREMENT  0\n#define RAND_MODULUS    2147483647\n\nstatic int lcgRandom( int seed )\n\{\n  return abs( ( seed * RAND_MULTIPLIER + RAND_INCREMENT ) % RAND_MODULUS );\n\}\n\n// ===== Interpolation Functions =====\n\nstatic float Smooth (const float &t)\n\{\n  // Fifth degree polynomial\n  return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);\n\}\n\nstatic float Lerp (const float &a, const float &b, const float &t)\n\{\n  return (b - a) * clamp(t, 0.0f, 1.0f) + a;\n\}\n\n\n// ===== Noise Function =====\n\nstatic float Perlin3D(float3 point, float frequency)\n\{\n  const int hash\[512] = \{\n    151,160,137, 91, 90, 15,131, 13,201, 95, 96, 53,194,233,  7,225,\n    140, 36,103, 30, 69,142,  8, 99, 37,240, 21, 10, 23,190,  6,148,\n    247,120,234, 75,  0, 26,197, 62, 94,252,219,203,117, 35, 11, 32,\n     57,177, 33, 88,237,149, 56, 87,174, 20,125,136,171,168, 68,175,\n     74,165, 71,134,139, 48, 27,166, 77,146,158,231, 83,111,229,122,\n     60,211,133,230,220,105, 92, 41, 55, 46,245, 40,244,102,143, 54,\n     65, 25, 63,161,  1,216, 80, 73,209, 76,132,187,208, 89, 18,169,\n    200,196,135,130,116,188,159, 86,164,100,109,198,173,186,  3, 64,\n     52,217,226,250,124,123,  5,202, 38,147,118,126,255, 82, 85,212,\n    207,206, 59,227, 47, 16, 58, 17,182,189, 28, 42,223,183,170,213,\n    119,248,152,  2, 44,154,163, 70,221,153,101,155,167, 43,172,  9,\n    129, 22, 39,253, 19, 98,108,110, 79,113,224,232,178,185,112,104,\n    218,246, 97,228,251, 34,242,193,238,210,144, 12,191,179,162,241,\n     81, 51,145,235,249, 14,239,107, 49,192,214, 31,181,199,106,157,\n    184, 84,204,176,115,121, 50, 45,127,  4,150,254,138,236,205, 93,\n    222,114, 67, 29, 24, 72,243,141,128,195, 78, 66,215, 61,156,180,\n\n    \n    151,160,137, 91, 90, 15,131, 13,201, 95, 96, 53,194,233,  7,225,\n    140, 36,103, 30, 69,142,  8, 99, 37,240, 21, 10, 23,190,  6,148,\n    247,120,234, 75,  0, 26,197, 62, 94,252,219,203,117, 35, 11, 32,\n     57,177, 33, 88,237,149, 56, 87,174, 20,125,136,171,168, 68,175,\n     74,165, 71,134,139, 48, 27,166, 77,146,158,231, 83,111,229,122,\n     60,211,133,230,220,105, 92, 41, 55, 46,245, 40,244,102,143, 54,\n     65, 25, 63,161,  1,216, 80, 73,209, 76,132,187,208, 89, 18,169,\n    200,196,135,130,116,188,159, 86,164,100,109,198,173,186,  3, 64,\n     52,217,226,250,124,123,  5,202, 38,147,118,126,255, 82, 85,212,\n    207,206, 59,227, 47, 16, 58, 17,182,189, 28, 42,223,183,170,213,\n    119,248,152,  2, 44,154,163, 70,221,153,101,155,167, 43,172,  9,\n    129, 22, 39,253, 19, 98,108,110, 79,113,224,232,178,185,112,104,\n    218,246, 97,228,251, 34,242,193,238,210,144, 12,191,179,162,241,\n     81, 51,145,235,249, 14,239,107, 49,192,214, 31,181,199,106,157,\n    184, 84,204,176,115,121, 50, 45,127,  4,150,254,138,236,205, 93,\n    222,114, 67, 29, 24, 72,243,141,128,195, 78, 66,215, 61,156,180\n  \};\n\n  const float4 gradients3D\[16] = \{\n    float4( 1.0f,  1.0f,  0.0f, 0.0f),\n    float4(-1.0f,  1.0f,  0.0f, 0.0f),\n    float4( 1.0f, -1.0f,  0.0f, 0.0f),\n    float4(-1.0f, -1.0f,  0.0f, 0.0f),\n    float4( 1.0f,  0.0f,  1.0f, 0.0f),\n    float4(-1.0f,  0.0f,  1.0f, 0.0f),\n    float4( 1.0f,  0.0f, -1.0f, 0.0f),\n    float4(-1.0f,  0.0f, -1.0f, 0.0f),\n    float4( 0.0f,  1.0f,  1.0f, 0.0f),\n    float4( 0.0f, -1.0f,  1.0f, 0.0f),\n    float4( 0.0f,  1.0f, -1.0f, 0.0f),\n    float4( 0.0f, -1.0f, -1.0f, 0.0f),\n    float4( 1.0f,  1.0f,  0.0f, 0.0f),\n    float4(-1.0f,  1.0f,  0.0f, 0.0f),\n    float4( 0.0f, -1.0f,  1.0f, 0.0f),\n    float4( 0.0f, -1.0f, -1.0f, 0.0f)\n  \};\n\n  const int hashMask = 255;\n  const int gradientsMask3D = 15;\n\n  point *= frequency;\n  int ix0 = floor(point.x);\n  int iy0 = floor(point.y);\n  int iz0 = floor(point.z);\n  float tx0 = point.x - ix0;\n  float ty0 = point.y - iy0;\n  float tz0 = point.z - iz0;\n  float tx1 = tx0 - 1.0f;\n  float ty1 = ty0 - 1.0f;\n  float tz1 = tz0 - 1.0f;\n  ix0 &= hashMask;\n  iy0 &= hashMask;\n  iz0 &= hashMask;\n  int ix1 = ix0 + 1;\n  int iy1 = iy0 + 1;\n  int iz1 = iz0 + 1;\n\n  int h0 = hash\[ ix0 ];\n  int h1 = hash\[ ix1 ];\n  int h00 = hash\[ h0 + iy0 ];\n  int h10 = hash\[ h1 + iy0 ];\n  int h01 = hash\[ h0 + iy1 ];\n  int h11 = hash\[ h1 + iy1 ];\n\n  // float3 fails for some unknown reason. Add an empty fourth\n  float4 g000 = gradients3D\[ hash\[ h00 + iz0 ] & gradientsMask3D ];\n  float4 g100 = gradients3D\[ hash\[ h10 + iz0 ] & gradientsMask3D ];\n  float4 g010 = gradients3D\[ hash\[ h01 + iz0 ] & gradientsMask3D ];\n  float4 g110 = gradients3D\[ hash\[ h11 + iz0 ] & gradientsMask3D ];\n  float4 g001 = gradients3D\[ hash\[ h00 + iz1 ] & gradientsMask3D ];\n  float4 g101 = gradients3D\[ hash\[ h10 + iz1 ] & gradientsMask3D ];\n  float4 g011 = gradients3D\[ hash\[ h01 + iz1 ] & gradientsMask3D ];\n  float4 g111 = gradients3D\[ hash\[ h11 + iz1 ] & gradientsMask3D ];\n\n  float v000 = dot(g000, float4(tx0, ty0, tz0, 0.0f));\n  float v100 = dot(g100, float4(tx1, ty0, tz0, 0.0f));\n  float v010 = dot(g010, float4(tx0, ty1, tz0, 0.0f));\n  float v110 = dot(g110, float4(tx1, ty1, tz0, 0.0f));\n  float v001 = dot(g001, float4(tx0, ty0, tz1, 0.0f));\n  float v101 = dot(g101, float4(tx1, ty0, tz1, 0.0f));\n  float v011 = dot(g011, float4(tx0, ty1, tz1, 0.0f));\n  float v111 = dot(g111, float4(tx1, ty1, tz1, 0.0f));\n\n  float tx = Smooth(tx0);\n  float ty = Smooth(ty0);\n  float tz = Smooth(tz0);\n  return Lerp(\n    Lerp(Lerp(v000, v100, tx), Lerp(v010, v110, tx), ty),\n    Lerp(Lerp(v001, v101, tx), Lerp(v011, v111, tx), ty),\n    tz);// * 0.5f + 0.5f;\n\}\n\n\nstatic float Fractal(float3 point, float frequency, int octaves, float lacunarity, float persistence)\n\{\n  \n  float sum = 0;\n  sum = Perlin3D(point, frequency);\n  float amplitude = 1.0f;\n  float range = 1.0f;\n  for (int o = 1; o < octaves; o++) \{\n    frequency *= lacunarity;\n    amplitude *= persistence;\n    range += amplitude;\n    sum += Perlin3D(point, frequency) * amplitude;\n  \}\n  return sum / range;\n\}\n\n\nkernel VFNoise : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead> voxels;\n  Image<eWrite> dst;\n\n  param:\n    int seed;\n    float size;\n    int octaves;\n    float lacunarity;\n    float persistence;\n    float4x4 M;\n\n  local:\n    float3 seed_offset;\n    float frequency;\n    float4x4 M_inv;\n\n  void define()\n  \{\n    defineParam(size, \"Size\", 30.0f);\n    defineParam(octaves, \"Octaves\", 4);\n    defineParam(lacunarity, \"Lacunarity\", 2.0f);\n    defineParam(persistence, \"Persistence\", 0.5f);\n  \}\n\n  void init()\n  \{\n    int random = seed;\n    for (int c = 0; c < 3; c++)\n    \{\n      random = lcgRandom(random);\n      seed_offset\[c] = (random / float(RAND_MODULUS)) * 10000;\n    \}\n    frequency = 1.0f / size;\n    M_inv = M.invert();\n  \}\n\n\n  float3 multVectMatrix(float4 vec, float4x4 M)\n  \{\n    float3 out = float3(\n      vec.x * M\[0]\[0] + vec.y * M\[0]\[1] + vec.z * M\[0]\[2] + M\[0]\[3],\n      vec.x * M\[1]\[0] + vec.y * M\[1]\[1] + vec.z * M\[1]\[2] + M\[1]\[3],\n      vec.x * M\[2]\[0] + vec.y * M\[2]\[1] + vec.z * M\[2]\[2] + M\[2]\[3]\n    );\n\n    return out;\n  \}\n\n\n  void process()\n  \{\n    float4 voxel = voxels();\n    float3 point = multVectMatrix(voxel, M_inv);\n    voxel.w = Fractal(point + seed_offset, frequency, octaves, lacunarity, persistence);\n    dst() = voxel;\n  \}\n    \n\};"
+  rebuild ""
+  VFNoise_seed {{parent.seed}}
+  VFNoise_Size {{parent.size}}
+  VFNoise_Octaves {{parent.octaves}}
+  VFNoise_Lacunarity {{parent.lacunarity}}
+  VFNoise_Persistence {{parent.persistence}}
+  VFNoise_M {
+      {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
+      {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
+      {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
+      {{parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix} {parent.NOISE_TRANSFORM.world_matrix}}
+    }
+  rebuild_finalise ""
+  name BlinkScript_noise
+  xpos 519
+  ypos -80
+ }
+ Add {
+  channels alpha
+  value {{parent.offset}}
+  name OFFSET
+  xpos 519
+  ypos -22
+ }
+ Multiply {
+  channels alpha
+  value {{parent.density}}
+  name DENSITY
+  xpos 519
+  ypos 16
+ }
+ Dot {
+  name Dot3
+  note_font_size 20
+  xpos 553
+  ypos 82
+ }
+push $N85c0d80
+ Dot {
+  name Dot2
+  note_font_size 20
+  xpos 680
+  ypos -231
+ }
+ ChannelMerge {
+  inputs 2
+  operation plus
+  name ChannelMerge1
+  xpos 646
+  ypos 65
+ }
+ Output {
+  name Output
+  xpos 646
+  ypos 145
+ }
+end_group
+Viewer {
+ inputs 0
+ frame 1
+ frame_range 1-100
+ monitorOutOutputTransform rec709
+ name Viewer1
+ xpos 301
+ ypos 277
+}

@@ -31,7 +31,7 @@ kernel VErode : ImageComputationKernel<ePixelWise>
     int id = (voxel.y * resolution.x + voxel.x) * resolution.z + voxel.z;
     int x = id % grid_width;
     int y = id / grid_width;
-    return voxels(x, y)[3]; // Just alpha (density)
+    return voxels(x, y, 3); // Just alpha (density)
   }
 
   void process(int2 pos)
